@@ -1,0 +1,24 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+# This package owns only headers (see sys/amd64/include for why the view
+# lives here and not in sys/x86).
+# `#include <x86/...>`: the shared x86 include tree, viewed under the name
+# the kernel sources spell (the reference compile directory's x86 symlink).
+cc_library(
+    name = "x86_include",
+    hdrs = glob(
+        ["**"],
+        allow_empty = True,
+    ),
+    include_prefix = "x86",
+)
+
+filegroup(
+    name = "tree",
+    srcs = glob(
+        ["**"],
+        allow_empty = True,
+    ),
+)

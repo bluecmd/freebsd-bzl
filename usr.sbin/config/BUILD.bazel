@@ -1,0 +1,79 @@
+package(default_visibility = ["//visibility:public"])
+load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+# config(8), as usr.sbin/config/Makefile builds it: yacc over config.y
+# (renamed to config.c as bsd.prog.mk's .y.c rule does), lex over lang.l,
+# file2c over kernconf.tmpl. The reference build's config is this binary --
+# running it on sys/amd64/conf/BZL generates the kernel compile directory
+# (the opt_*.h family, config.c, env.c, hints.c, force-dynamic-hack.c).
+
+genrule(
+    name = "grammar",
+    srcs = ["config.y"],
+    outs = ["config.c", "y.tab.h"],
+    cmd = """
+        YACC=$$PWD/$(location //usr.bin/yacc:yacc)
+        SRC=$$PWD/$(location config.y)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir g && cd g
+        $$YACC -d "$$SRC"
+        mv y.tab.c "$$OUT/config.c"
+        mv y.tab.h "$$OUT/y.tab.h"
+        cd .. && rm -rf g
+    """,
+    tools = ["//usr.bin/yacc:yacc"],
+)
+
+genrule(
+    name = "scanner",
+    srcs = ["lang.l"],
+    outs = ["lang.c"],
+    cmd = """
+        LEX=$$PWD/$(location //usr.bin/lex:lex)
+        M4=$$PWD/$(location //usr.bin/m4:m4boot)
+        SRC=$$PWD/$(location lang.l)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir s && cd s
+        ln -sf $$M4 m4
+        PATH=$$PWD:$$PATH $$LEX -olang.c "$$SRC"
+        mv lang.c "$$OUT/lang.c"
+        cd .. && rm -rf s
+    """,
+    tools = ["//usr.bin/lex:lex", "//usr.bin/m4:m4boot"],
+)
+
+genrule(
+    name = "kernconf",
+    srcs = ["kernconf.tmpl"],
+    outs = ["kernconf.c"],
+    cmd = "$(location //usr.bin/file2c:file2c) 'char kernconfstr[] = {' ',0};' < $(location kernconf.tmpl) > $(RULEDIR)/kernconf.c",
+    tools = ["//usr.bin/file2c:file2c"],
+)
+
+cc_binary(
+    name = "config",
+    srcs = [
+        "main.cc",
+        "mkmakefile.cc",
+        "mkheaders.c",
+        "mkoptions.cc",
+        ":grammar",
+        ":scanner",
+        ":kernconf",
+        "config.h",
+        "configvers.h",
+    ],
+    includes = ["usr.sbin/config"],
+    copts = [
+        "-I.",
+        "-I$(GENDIR)",
+        "-I$(GENDIR)/usr.sbin/config",
+        "-Iusr.sbin/config",
+    ],
+    deps = [
+        "//lib/libc:legacy",
+        "//tools/build/cross-build:nbtool",
+        "//tools/build/cross-build:bitcount",
+    ],
+    linkopts = ["-pthread"],
+    linkstatic = True,
+)

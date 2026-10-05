@@ -1,0 +1,48 @@
+load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+
+package(default_visibility = ["//visibility:public"])
+
+# The bootstrap m4 the reference builds first: m4's own sources with the
+# checked-in tokenizer snapshot, so it needs yacc but not lex (the real m4
+# would need lex, which needs an m4 for its skeleton at run time).
+genrule(
+    name = "m4_parser",
+    srcs = ["parser.y"],
+    outs = ["parser.c", "parser.h"],
+    cmd = """
+        YACC=$$PWD/$(location //usr.bin/yacc:yacc)
+        SRC=$$PWD/$(location parser.y)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir p && cd p
+        $$YACC -d -o parser.c "$$SRC"
+        mv parser.c parser.h "$$OUT/"
+        cd .. && rm -rf p
+    """,
+    tools = ["//usr.bin/yacc:yacc"],
+)
+
+cc_binary(
+    name = "m4boot",
+    srcs = [
+        "eval.c",
+        "expr.c",
+        "look.c",
+        "main.c",
+        "misc.c",
+        "gnum4.c",
+        "trace.c",
+        "mdef.h",
+        "stdd.h",
+        "extern.h",
+        "pathnames.h",
+        ":m4_parser",
+        "//:tools/build/bootstrap-m4/inittokenizer.c",
+    ],
+    copts = ["-DEXTENDED", "-I$(GENDIR)/usr.bin/m4"],
+    deps = [
+        "//lib/libc:legacy",
+        "//lib/libopenbsd:openbsd",
+        "//tools/build/cross-build:bitcount",
+        "//tools/build/cross-build:nbtool",
+    ],
+)

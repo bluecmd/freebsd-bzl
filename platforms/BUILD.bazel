@@ -1,0 +1,40 @@
+package(default_visibility = ["//visibility:public"])
+
+# Kernel code is compiled by a second cc toolchain whose compile line is the
+# kernel's own (//toolchain); the kernel platform selects it. Host tools are
+# built for the exec platform, where the plain LLVM toolchain applies.
+constraint_setting(
+    name = "address_space",
+    default_constraint_value = ":user",
+)
+
+constraint_value(
+    name = "user",
+    constraint_setting = ":address_space",
+)
+
+constraint_value(
+    name = "kernel",
+    constraint_setting = ":address_space",
+)
+
+platform(
+    name = "x86_64_kernel",
+    constraint_values = [
+        "@platforms//os:freebsd",
+        "@platforms//cpu:x86_64",
+        ":kernel",
+    ],
+)
+
+# The host (exec) platform spelled as a target platform, so the tree's host
+# tools can be built directly during development with the plain LLVM
+# toolchain instead of the kernel one (they are always built in the exec
+# configuration as genrule tools; this target is a development convenience).
+platform(
+    name = "x86_64_host",
+    constraint_values = [
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
+    ],
+)

@@ -1,0 +1,4472 @@
+load("//bazel/rules:cc_per_source_library.bzl", "cc_per_source_library")
+load("//bazel/rules:freebsd_kernel_link.bzl", "freebsd_kernel_link")
+
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+genrule(
+    name = "config",
+    srcs = [
+        "//:config_inputs",
+        "//:sys/amd64/conf/BZL",
+        "//:sys/amd64/conf/DEFAULTS",
+    ],
+    outs = [
+        "config.c",
+        "env.c",
+        "hints.c",
+        "opt_aac.h",
+        "opt_aacraid.h",
+        "opt_accept_filter_data.h",
+        "opt_accept_filter_dns.h",
+        "opt_accept_filter_http.h",
+        "opt_accept_filter_tls.h",
+        "opt_acpi.h",
+        "opt_ada.h",
+        "opt_adaptive_mutexes.h",
+        "opt_agp.h",
+        "opt_ah.h",
+        "opt_aic79xx.h",
+        "opt_aic7xxx.h",
+        "opt_alq.h",
+        "opt_altq.h",
+        "opt_amdsbwd.h",
+        "opt_asmc.h",
+        "opt_ath.h",
+        "opt_atkbd.h",
+        "opt_atpic.h",
+        "opt_auto_eoi.h",
+        "opt_bce.h",
+        "opt_bhyve_snapshot.h",
+        "opt_bootp.h",
+        "opt_bpf.h",
+        "opt_bus.h",
+        "opt_bwi.h",
+        "opt_bwn.h",
+        "opt_callout_profiling.h",
+        "opt_cam.h",
+        "opt_capsicum.h",
+        "opt_carp.h",
+        "opt_cc.h",
+        "opt_cd.h",
+        "opt_cfi.h",
+        "opt_clock.h",
+        "opt_config.h",
+        "opt_cpu.h",
+        "opt_cy_pci_fastintr.h",
+        "opt_da.h",
+        "opt_dcons.h",
+        "opt_ddb.h",
+        "opt_debug_lockf.h",
+        "opt_debug_si.h",
+        "opt_device_polling.h",
+        "opt_directio.h",
+        "opt_dontuse.h",
+        "opt_drm.h",
+        "opt_efirt.h",
+        "opt_ekcd.h",
+        "opt_etherswitch.h",
+        "opt_evdev.h",
+        "opt_fb.h",
+        "opt_fdc.h",
+        "opt_ffclock.h",
+        "opt_ffs.h",
+        "opt_gdb.h",
+        "opt_geom.h",
+        "opt_global.h",
+        "opt_gpio.h",
+        "opt_gzio.h",
+        "opt_hid.h",
+        "opt_hifn.h",
+        "opt_hkbd.h",
+        "opt_hn.h",
+        "opt_hwpmc_hooks.h",
+        "opt_hwt_hooks.h",
+        "opt_iflib.h",
+        "opt_ifmedia.h",
+        "opt_inet.h",
+        "opt_inet6.h",
+        "opt_init_path.h",
+        "opt_intpm.h",
+        "opt_iommu.h",
+        "opt_ipdivert.h",
+        "opt_ipdn.h",
+        "opt_ipfilter.h",
+        "opt_ipfw.h",
+        "opt_ipsec.h",
+        "opt_ipstealth.h",
+        "opt_isa.h",
+        "opt_isci.h",
+        "opt_isp.h",
+        "opt_iwm.h",
+        "opt_iwn.h",
+        "opt_ixl.h",
+        "opt_kbd.h",
+        "opt_kbdmux.h",
+        "opt_kcov.h",
+        "opt_kdb.h",
+        "opt_kdtrace.h",
+        "opt_kern_tls.h",
+        "opt_kgssapi.h",
+        "opt_kld.h",
+        "opt_kqueue.h",
+        "opt_krpc.h",
+        "opt_kstack_max_pages.h",
+        "opt_kstack_pages.h",
+        "opt_kstack_usage_prof.h",
+        "opt_ktr.h",
+        "opt_ktrace.h",
+        "opt_libalias.h",
+        "opt_libiconv.h",
+        "opt_libmchain.h",
+        "opt_lindebugfs.h",
+        "opt_lpt.h",
+        "opt_mac.h",
+        "opt_malo.h",
+        "opt_maxmem.h",
+        "opt_maxphys.h",
+        "opt_maxusers.h",
+        "opt_mbuf_profiling.h",
+        "opt_mbuf_stress_test.h",
+        "opt_md.h",
+        "opt_mfi.h",
+        "opt_mmccam.h",
+        "opt_mprof.h",
+        "opt_mptable_force_htt.h",
+        "opt_mptable_linux_bug_compat.h",
+        "opt_mrouting.h",
+        "opt_msgbuf.h",
+        "opt_mvneta.h",
+        "opt_mwl.h",
+        "opt_netgraph.h",
+        "opt_netsmb.h",
+        "opt_nfs.h",
+        "opt_nfslockd.h",
+        "opt_nfsroot.h",
+        "opt_no_adaptive_rwlocks.h",
+        "opt_no_adaptive_sx.h",
+        "opt_ntp.h",
+        "opt_nvme.h",
+        "opt_ofed.h",
+        "opt_panic.h",
+        "opt_param.h",
+        "opt_pcfclock.h",
+        "opt_pci.h",
+        "opt_pf.h",
+        "opt_platform.h",
+        "opt_plip.h",
+        "opt_pmap.h",
+        "opt_posix.h",
+        "opt_ppb_1284.h",
+        "opt_ppc.h",
+        "opt_printf.h",
+        "opt_pseudofs.h",
+        "opt_psm.h",
+        "opt_pt.h",
+        "opt_qat.h",
+        "opt_quota.h",
+        "opt_ratelimit.h",
+        "opt_rootdevname.h",
+        "opt_route.h",
+        "opt_rss.h",
+        "opt_rtwn.h",
+        "opt_sa.h",
+        "opt_safe.h",
+        "opt_sched.h",
+        "opt_scsi.h",
+        "opt_sctp.h",
+        "opt_ses.h",
+        "opt_siba.h",
+        "opt_siftr.h",
+        "opt_sleepqueue_profiling.h",
+        "opt_slhci.h",
+        "opt_slip.h",
+        "opt_smp.h",
+        "opt_snd.h",
+        "opt_spi.h",
+        "opt_splash.h",
+        "opt_stack.h",
+        "opt_suiddir.h",
+        "opt_sym.h",
+        "opt_syscons.h",
+        "opt_sysctl.h",
+        "opt_sysvipc.h",
+        "opt_tarfs.h",
+        "opt_tcphpts.h",
+        "opt_tdma.h",
+        "opt_teken.h",
+        "opt_ti.h",
+        "opt_tmpfs.h",
+        "opt_tpm.h",
+        "opt_turnstile_profiling.h",
+        "opt_u3g.h",
+        "opt_uart.h",
+        "opt_ufs.h",
+        "opt_ukbd.h",
+        "opt_umtx_profiling.h",
+        "opt_uplcom.h",
+        "opt_usb.h",
+        "opt_uvscom.h",
+        "opt_verbose_sysinit.h",
+        "opt_vesa.h",
+        "opt_vga.h",
+        "opt_videomode.h",
+        "opt_vlan.h",
+        "opt_vm.h",
+        "opt_watchdog.h",
+        "opt_witness.h",
+        "opt_wlan.h",
+        "opt_wpi.h",
+        "opt_x86bios.h",
+        "opt_xbonehack.h",
+        "opt_xdr.h",
+        "opt_zstdio.h",
+    ],
+    # config(8) is driven the way the reference drove it: from a directory
+    # that looks like a kernel conf dir -- config opens "DEFAULTS" relative
+    # to the cwd (that is where "machine amd64" comes from), and reads the
+    # machine skeleton and file/option tables as "../../conf/...". The
+    # sandbox stages that shape as a pair of symlinks into the declared
+    # inputs, then runs the config on the BZL file.
+    cmd = """
+        CFG=$$PWD/$(location //usr.sbin/config:config)
+        BZL=$$PWD/$(location //:sys/amd64/conf/BZL)
+        OUT=$$PWD/$(RULEDIR)
+        W=$$PWD/w
+        mkdir -p w/sys/amd64 w/sys
+        ln -s ../../../sys/amd64/conf w/sys/amd64/conf
+        ln -s ../../sys/conf w/sys/conf
+        cd w/sys/amd64/conf
+        "$$CFG" -d "$$OUT/_cfg" -I "$$PWD" "$$BZL"
+        cp "$$OUT/_cfg"/config.c "$$OUT/_cfg"/env.c "$$OUT/_cfg"/hints.c \
+           "$$OUT/_cfg"/opt_*.h "$$OUT/"
+        cd "$$OUT" && rm -rf _cfg "$$W"
+    """,
+    tools = ["//usr.sbin/config:config"],
+)
+
+
+genrule(
+    name = "acpi_if.c",
+    srcs = ["//:sys/dev/acpica/acpi_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["acpi_if.c"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/dev/acpica/acpi_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -c
+        mv acpi_if.c "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "acpi_if.h",
+    srcs = ["//:sys/dev/acpica/acpi_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["acpi_if.h"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/dev/acpica/acpi_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -h
+        mv acpi_if.h "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "acpi_wmi_if.c",
+    srcs = ["//:sys/dev/acpi_support/acpi_wmi_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["acpi_wmi_if.c"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/dev/acpi_support/acpi_wmi_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -c
+        mv acpi_wmi_if.c "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "acpi_wmi_if.h",
+    srcs = ["//:sys/dev/acpi_support/acpi_wmi_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["acpi_wmi_if.h"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/dev/acpi_support/acpi_wmi_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -h
+        mv acpi_wmi_if.h "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "bus_if.c",
+    srcs = ["//:sys/kern/bus_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["bus_if.c"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/kern/bus_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -c
+        mv bus_if.c "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "bus_if.h",
+    srcs = ["//:sys/kern/bus_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["bus_if.h"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/kern/bus_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -h
+        mv bus_if.h "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "card_if.c",
+    srcs = ["//:sys/dev/cardbus/card_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["card_if.c"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/dev/cardbus/card_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -c
+        mv card_if.c "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "card_if.h",
+    srcs = ["//:sys/dev/cardbus/card_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["card_if.h"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/dev/cardbus/card_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -h
+        mv card_if.h "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "clock_if.c",
+    srcs = ["//:sys/kern/clock_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["clock_if.c"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/kern/clock_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -c
+        mv clock_if.c "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "clock_if.h",
+    srcs = ["//:sys/kern/clock_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["clock_if.h"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/kern/clock_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -h
+        mv clock_if.h "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "cpufreq_if.c",
+    srcs = ["//:sys/kern/cpufreq_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["cpufreq_if.c"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/kern/cpufreq_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -c
+        mv cpufreq_if.c "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "cpufreq_if.h",
+    srcs = ["//:sys/kern/cpufreq_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["cpufreq_if.h"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/kern/cpufreq_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -h
+        mv cpufreq_if.h "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "cryptodev_if.c",
+    srcs = ["//:sys/opencrypto/cryptodev_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["cryptodev_if.c"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/opencrypto/cryptodev_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -c
+        mv cryptodev_if.c "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "cryptodev_if.h",
+    srcs = ["//:sys/opencrypto/cryptodev_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["cryptodev_if.h"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/opencrypto/cryptodev_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -h
+        mv cryptodev_if.h "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "device_if.c",
+    srcs = ["//:sys/kern/device_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["device_if.c"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/kern/device_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -c
+        mv device_if.c "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "device_if.h",
+    srcs = ["//:sys/kern/device_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["device_if.h"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/kern/device_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -h
+        mv device_if.h "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "fb_if.c",
+    srcs = ["//:sys/dev/fb/fb_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["fb_if.c"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/dev/fb/fb_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -c
+        mv fb_if.c "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "fb_if.h",
+    srcs = ["//:sys/dev/fb/fb_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["fb_if.h"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/dev/fb/fb_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -h
+        mv fb_if.h "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "g_part_if.c",
+    srcs = ["//:sys/geom/part/g_part_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["g_part_if.c"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/geom/part/g_part_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -c
+        mv g_part_if.c "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "g_part_if.h",
+    srcs = ["//:sys/geom/part/g_part_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["g_part_if.h"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/geom/part/g_part_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -h
+        mv g_part_if.h "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "g_raid_md_if.c",
+    srcs = ["//:sys/geom/raid/g_raid_md_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["g_raid_md_if.c"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/geom/raid/g_raid_md_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -c
+        mv g_raid_md_if.c "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "g_raid_md_if.h",
+    srcs = ["//:sys/geom/raid/g_raid_md_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["g_raid_md_if.h"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/geom/raid/g_raid_md_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -h
+        mv g_raid_md_if.h "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "g_raid_tr_if.c",
+    srcs = ["//:sys/geom/raid/g_raid_tr_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["g_raid_tr_if.c"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/geom/raid/g_raid_tr_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -c
+        mv g_raid_tr_if.c "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "g_raid_tr_if.h",
+    srcs = ["//:sys/geom/raid/g_raid_tr_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["g_raid_tr_if.h"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/geom/raid/g_raid_tr_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -h
+        mv g_raid_tr_if.h "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "isa_if.c",
+    srcs = ["//:sys/isa/isa_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["isa_if.c"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/isa/isa_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -c
+        mv isa_if.c "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "isa_if.h",
+    srcs = ["//:sys/isa/isa_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["isa_if.h"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/isa/isa_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -h
+        mv isa_if.h "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "linker_if.c",
+    srcs = ["//:sys/kern/linker_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["linker_if.c"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/kern/linker_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -c
+        mv linker_if.c "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "linker_if.h",
+    srcs = ["//:sys/kern/linker_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["linker_if.h"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/kern/linker_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -h
+        mv linker_if.h "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "mmcbr_if.c",
+    srcs = ["//:sys/dev/mmc/mmcbr_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["mmcbr_if.c"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/dev/mmc/mmcbr_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -c
+        mv mmcbr_if.c "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "mmcbr_if.h",
+    srcs = ["//:sys/dev/mmc/mmcbr_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["mmcbr_if.h"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/dev/mmc/mmcbr_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -h
+        mv mmcbr_if.h "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "mmcbus_if.c",
+    srcs = ["//:sys/dev/mmc/mmcbus_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["mmcbus_if.c"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/dev/mmc/mmcbus_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -c
+        mv mmcbus_if.c "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "mmcbus_if.h",
+    srcs = ["//:sys/dev/mmc/mmcbus_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["mmcbus_if.h"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/dev/mmc/mmcbus_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -h
+        mv mmcbus_if.h "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "pci_if.c",
+    srcs = ["//:sys/dev/pci/pci_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["pci_if.c"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/dev/pci/pci_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -c
+        mv pci_if.c "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "pci_if.h",
+    srcs = ["//:sys/dev/pci/pci_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["pci_if.h"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/dev/pci/pci_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -h
+        mv pci_if.h "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "pci_iov_if.c",
+    srcs = ["//:sys/dev/pci/pci_iov_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["pci_iov_if.c"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/dev/pci/pci_iov_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -c
+        mv pci_iov_if.c "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "pci_iov_if.h",
+    srcs = ["//:sys/dev/pci/pci_iov_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["pci_iov_if.h"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/dev/pci/pci_iov_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -h
+        mv pci_iov_if.h "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "pcib_if.c",
+    srcs = ["//:sys/dev/pci/pcib_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["pcib_if.c"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/dev/pci/pcib_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -c
+        mv pcib_if.c "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "pcib_if.h",
+    srcs = ["//:sys/dev/pci/pcib_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["pcib_if.h"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/dev/pci/pcib_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -h
+        mv pcib_if.h "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "power_if.c",
+    srcs = ["//:sys/dev/cardbus/power_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["power_if.c"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/dev/cardbus/power_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -c
+        mv power_if.c "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "power_if.h",
+    srcs = ["//:sys/dev/cardbus/power_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["power_if.h"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/dev/cardbus/power_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -h
+        mv power_if.h "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "serdev_if.c",
+    srcs = ["//:sys/kern/serdev_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["serdev_if.c"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/kern/serdev_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -c
+        mv serdev_if.c "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "serdev_if.h",
+    srcs = ["//:sys/kern/serdev_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["serdev_if.h"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/kern/serdev_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -h
+        mv serdev_if.h "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "uart_if.c",
+    srcs = ["//:sys/dev/uart/uart_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["uart_if.c"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/dev/uart/uart_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -c
+        mv uart_if.c "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "uart_if.h",
+    srcs = ["//:sys/dev/uart/uart_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["uart_if.h"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/dev/uart/uart_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -h
+        mv uart_if.h "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "virtio_if.c",
+    srcs = ["//:sys/dev/virtio/virtio_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["virtio_if.c"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/dev/virtio/virtio_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -c
+        mv virtio_if.c "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "virtio_if.h",
+    srcs = ["//:sys/dev/virtio/virtio_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["virtio_if.h"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/dev/virtio/virtio_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -h
+        mv virtio_if.h "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "virtio_bus_if.c",
+    srcs = ["//:sys/dev/virtio/virtio_bus_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["virtio_bus_if.c"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/dev/virtio/virtio_bus_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -c
+        mv virtio_bus_if.c "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "virtio_bus_if.h",
+    srcs = ["//:sys/dev/virtio/virtio_bus_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["virtio_bus_if.h"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/dev/virtio/virtio_bus_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -h
+        mv virtio_bus_if.h "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "virtio_pci_if.c",
+    srcs = ["//:sys/dev/virtio/pci/virtio_pci_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["virtio_pci_if.c"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/dev/virtio/pci/virtio_pci_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -c
+        mv virtio_pci_if.c "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "virtio_pci_if.h",
+    srcs = ["//:sys/dev/virtio/pci/virtio_pci_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["virtio_pci_if.h"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/dev/virtio/pci/virtio_pci_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -h
+        mv virtio_pci_if.h "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "xenbus_if.c",
+    srcs = ["//:sys/xen/xenbus/xenbus_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["xenbus_if.c"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/xen/xenbus/xenbus_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -c
+        mv xenbus_if.c "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "xenbus_if.h",
+    srcs = ["//:sys/xen/xenbus/xenbus_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["xenbus_if.h"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/xen/xenbus/xenbus_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -h
+        mv xenbus_if.h "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "xenbusb_if.c",
+    srcs = ["//:sys/xen/xenbus/xenbusb_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["xenbusb_if.c"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/xen/xenbus/xenbusb_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -c
+        mv xenbusb_if.c "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "xenbusb_if.h",
+    srcs = ["//:sys/xen/xenbus/xenbusb_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["xenbusb_if.h"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/xen/xenbus/xenbusb_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -h
+        mv xenbusb_if.h "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "xenmem_if.c",
+    srcs = ["//:sys/xen/xenmem/xenmem_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["xenmem_if.c"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/xen/xenmem/xenmem_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -c
+        mv xenmem_if.c "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+genrule(
+    name = "xenmem_if.h",
+    srcs = ["//:sys/xen/xenmem/xenmem_if.m", "//:sys/tools/makeobjops.awk"],
+    outs = ["xenmem_if.h"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        M=$$PWD/$(location //:sys/xen/xenmem/xenmem_if.m)
+        AWKF=$$PWD/$(location //:sys/tools/makeobjops.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$M -h
+        mv xenmem_if.h "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+
+# vnode_if_newproto.h, the -p pass of sys/tools/vnode_if.awk over
+# sys/kern/vnode_if.src (sys/conf/kern.mk's four awk stages).
+genrule(
+    name = "vnode_if_newproto.h",
+    srcs = ["//:sys/kern/vnode_if.src", "//:sys/tools/vnode_if.awk"],
+    outs = ["vnode_if_newproto.h"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        SRC=$$PWD/$(location //:sys/kern/vnode_if.src)
+        AWKF=$$PWD/$(location //:sys/tools/vnode_if.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$SRC -p
+        mv vnode_if_newproto.h "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+# vnode_if_typedef.h, the -q pass of the same script.
+genrule(
+    name = "vnode_if_typedef.h",
+    srcs = ["//:sys/kern/vnode_if.src", "//:sys/tools/vnode_if.awk"],
+    outs = ["vnode_if_typedef.h"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        SRC=$$PWD/$(location //:sys/kern/vnode_if.src)
+        AWKF=$$PWD/$(location //:sys/tools/vnode_if.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$SRC -q
+        mv vnode_if_typedef.h "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+# vnode_if.c, the -c pass of the same script.
+genrule(
+    name = "vnode_if.c",
+    srcs = ["//:sys/kern/vnode_if.src", "//:sys/tools/vnode_if.awk"],
+    outs = ["vnode_if.c"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        SRC=$$PWD/$(location //:sys/kern/vnode_if.src)
+        AWKF=$$PWD/$(location //:sys/tools/vnode_if.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$SRC -c
+        mv vnode_if.c "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+# vnode_if.h, the -h pass of the same script.
+genrule(
+    name = "vnode_if.h",
+    srcs = ["//:sys/kern/vnode_if.src", "//:sys/tools/vnode_if.awk"],
+    outs = ["vnode_if.h"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        SRC=$$PWD/$(location //:sys/kern/vnode_if.src)
+        AWKF=$$PWD/$(location //:sys/tools/vnode_if.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$SRC -h
+        mv vnode_if.h "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+# acpi_quirks.h, sys/tools/acpi_quirks2h.awk over the quirks table.
+genrule(
+    name = "acpi_quirks.h",
+    srcs = ["//:sys/dev/acpica/acpi_quirks", "//:sys/tools/acpi_quirks2h.awk"],
+    outs = ["acpi_quirks.h"],
+    tools = ["//usr.bin/awk:awk"],
+    cmd = """
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        SRC=$$PWD/$(location //:sys/dev/acpica/acpi_quirks)
+        AWKF=$$PWD/$(location //:sys/tools/acpi_quirks2h.awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        $$AWK -f $$AWKF $$SRC
+        mv acpi_quirks.h "$$OUT/"
+        cd .. && rm -rf t
+    """,
+)
+
+
+# Every generated kernel-build file the compiles reach: config(8)'s outputs,
+# the staged include trees and the generator outputs.
+filegroup(
+    name = "generated",
+    srcs = [
+        ":config",
+        ":acpi_quirks.h",
+        ":vnode_if_newproto.h",
+        ":vnode_if_typedef.h",
+        ":vnode_if.c",
+        ":vnode_if.h",
+        ":newvers",
+        ":rpctlscd_gen",
+        ":rpctlssd_gen",
+        ":bus_if.c",
+        ":bus_if.h",
+        ":card_if.c",
+        ":card_if.h",
+        ":clock_if.c",
+        ":clock_if.h",
+        ":cpufreq_if.c",
+        ":cpufreq_if.h",
+        ":cryptodev_if.c",
+        ":cryptodev_if.h",
+        ":device_if.c",
+        ":device_if.h",
+        ":fb_if.c",
+        ":fb_if.h",
+        ":g_part_if.c",
+        ":g_part_if.h",
+        ":g_raid_md_if.c",
+        ":g_raid_md_if.h",
+        ":g_raid_tr_if.c",
+        ":g_raid_tr_if.h",
+        ":isa_if.c",
+        ":isa_if.h",
+        ":linker_if.c",
+        ":linker_if.h",
+        ":mmcbr_if.c",
+        ":mmcbr_if.h",
+        ":mmcbus_if.c",
+        ":mmcbus_if.h",
+        ":pci_if.c",
+        ":pci_if.h",
+        ":pci_iov_if.c",
+        ":pci_iov_if.h",
+        ":pcib_if.c",
+        ":pcib_if.h",
+        ":power_if.c",
+        ":power_if.h",
+        ":serdev_if.c",
+        ":serdev_if.h",
+        ":uart_if.c",
+        ":uart_if.h",
+        ":virtio_bus_if.c",
+        ":virtio_bus_if.h",
+        ":virtio_if.c",
+        ":virtio_if.h",
+        ":virtio_pci_if.c",
+        ":virtio_pci_if.h",
+        ":xenbusb_if.c",
+        ":xenbusb_if.h",
+        ":xenbus_if.c",
+        ":xenbus_if.h",
+        ":xenmem_if.c",
+        ":xenmem_if.h",
+        ":acpi_if.c",
+        ":acpi_if.h",
+        ":acpi_wmi_if.c",
+        ":acpi_wmi_if.h",
+    ],
+)
+
+genrule(
+    name = "offset_inc",
+    srcs = [
+        ":cc_000",
+        "//:sys/kern/genoffset.sh",
+    ],
+    outs = ["offset.inc"],
+    cmd = """
+        A=$$PWD/$(location :cc_000)
+        SH=$$PWD/$(location //:sys/kern/genoffset.sh)
+        NM=$$PWD/$(location @kernel_llvm//:bin/llvm-nm)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        ar p "$$A" genoffset.o > genoffset.o
+        NM="$$NM" NMFLAGS= sh "$$SH" genoffset.o > "$$OUT/offset.inc"
+        cd .. && rm -rf t
+    """,
+    tools = ["@kernel_llvm//:bin/llvm-nm"],
+)
+
+genrule(
+    name = "assym_inc",
+    srcs = [
+        ":cc_061",
+        "//:sys/kern/genassym.sh",
+    ],
+    outs = ["assym.inc"],
+    cmd = """
+        A=$$PWD/$(location :cc_061)
+        SH=$$PWD/$(location //:sys/kern/genassym.sh)
+        NM=$$PWD/$(location @kernel_llvm//:bin/llvm-nm)
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        ar p "$$A" genassym.o > genassym.o
+        NM="$$NM" NMFLAGS= AWK="$$AWK" sh "$$SH" genassym.o > "$$OUT/assym.inc"
+        cd .. && rm -rf t
+    """,
+    tools = [
+        "//usr.bin/awk:awk",
+        "@kernel_llvm//:bin/llvm-nm",
+    ],
+)
+
+genrule(
+    name = "ia32_assym",
+    srcs = [
+        ":cc_061",
+        "//:sys/kern/genassym.sh",
+    ],
+    outs = ["ia32_assym.h"],
+    cmd = """
+        A=$$PWD/$(location :cc_061)
+        SH=$$PWD/$(location //:sys/kern/genassym.sh)
+        NM=$$PWD/$(location @kernel_llvm//:bin/llvm-nm)
+        AWK=$$PWD/$(location //usr.bin/awk:awk)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        ar p "$$A" ia32_genassym.o > ia32_genassym.o
+        NM="$$NM" NMFLAGS= AWK="$$AWK" sh "$$SH" ia32_genassym.o > "$$OUT/ia32_assym.h"
+        cd .. && rm -rf t
+    """,
+    tools = [
+        "//usr.bin/awk:awk",
+        "@kernel_llvm//:bin/llvm-nm",
+    ],
+)
+
+# acpi_wakecode.bin/.h/wakedata.h, as sys/conf/files.amd64's before-depend
+# rules chain them off the acpi_wakecode.o of cc_002.
+genrule(
+    name = "acpi_wakecode",
+    srcs = [":cc_062"],
+    outs = [
+        "acpi_wakecode.bin",
+        "acpi_wakecode.h",
+        "acpi_wakedata.h",
+    ],
+    cmd = """
+        A=$$PWD/$(location :cc_062)
+        OC=$$PWD/$(location @kernel_llvm//:bin/llvm-objcopy)
+        NM=$$PWD/$(location @kernel_llvm//:bin/llvm-nm)
+        F2C=$$PWD/$(location //usr.bin/file2c:file2c)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        ar p "$$A" acpi_wakecode.o > acpi_wakecode.o
+        "$$OC" -S -O binary acpi_wakecode.o acpi_wakecode.bin
+        "$$NM" -n --defined-only acpi_wakecode.o |
+            while read offset dummy what; do
+                printf '#define\t%s\t0x%s\n' "$$what" "$$offset"
+            done > acpi_wakedata.h
+        "$$F2C" -sx 'static char wakecode[] = {' '};' < acpi_wakecode.bin > acpi_wakecode.h
+        mv acpi_wakecode.bin acpi_wakecode.h acpi_wakedata.h "$$OUT/"
+        cd .. && rm -rf t
+    """,
+    tools = [
+        "//usr.bin/file2c:file2c",
+        "@kernel_llvm//:bin/llvm-objcopy",
+        "@kernel_llvm//:bin/llvm-nm",
+    ],
+)
+
+# vers.c + version, as kern.post.mk's newvers rule runs newvers.sh (-R: no
+# metadata). The tree's COPYRIGHT (staged) fixes the year; the make -V
+# queries KERN_IDENT/CC the Makefile answers are answered by a shim, whose
+# CC is the toolchain's clang (newvers.sh runs "$CC -v" for its
+# compiler_version line).
+genrule(
+    name = "newvers",
+    srcs = [
+        "//:sys/conf/newvers.sh",
+        "//:sys/sys/param.h",
+        "//:COPYRIGHT",
+    ],
+    outs = [
+        "vers.c",
+        "version",
+    ],
+    cmd = """
+        NV=$$PWD/$(location //:sys/conf/newvers.sh)
+        CC=$$PWD/$(location @kernel_llvm//:bin/clang)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        printf '#!/bin/sh\ncase "$$1 $$2" in\n"-V CC") echo "$$CCCMD";;\n"-V KERN_IDENT") echo BZL;;\n*) exit 1;;\nesac\n' > mk
+        chmod +x mk
+        MAKE=$$PWD/mk CCCMD="$$CC" sh "$$NV" -R -d /usr/obj/usr/src/amd64.amd64/sys/BZL BZL
+        mv vers.c version "$$OUT/"
+        cd .. && rm -rf t
+    """,
+    tools = ["@kernel_llvm//:bin/clang"],
+)
+
+# The vdso images, as sys/tools/amd64_vdso.sh / amd64_ia32_vdso.sh build
+# them in the compile directory: a staged tree (opt_global.h and the
+# machine/x86/i386 include symlinks) plus S=sys. ELFDUMP is left unset --
+# there is no elfdump in the sandbox, exactly as in the reference build,
+# where its RELOCS check is what fails silently.
+genrule(
+    name = "vdso",
+    srcs = [
+        ":assym_inc",
+        ":config",
+        "//:amd64_include",
+        "//:sys_headers",
+        "//:sys/tools/amd64_vdso.sh",
+        "//:sys/amd64/amd64/sigtramp.S",
+        "//:sys/tools/vdso_wrap.S",
+        "//:sys/conf/vdso_amd64.ldscript",
+    ],
+    outs = [
+        "sigtramp.pico",
+        "elf-vdso.so.o",
+        "elf-vdso.so.1",
+        "vdso_offsets.h",
+    ],
+    cmd = """
+        CCB=$$PWD/$(location @kernel_llvm//:bin/clang)
+        LDB=$$PWD/$(location @kernel_llvm//:bin/ld.lld)
+        NMB=$$PWD/$(location @kernel_llvm//:bin/llvm-nm)
+        AWKB=$$PWD/$(location //usr.bin/awk:awk)
+        SHF=$$PWD/$(location //:sys/tools/amd64_vdso.sh)
+        SYS=$$PWD/sys
+        G=$$PWD/$(GENDIR)/sys/BZL
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        cp "$$G/opt_global.h" .
+        cp "$$G/assym.inc" .
+        ln -s "$$SYS/amd64/include" machine
+        ln -s "$$SYS/x86/include" x86
+        ln -s "$$SYS/i386/include" i386
+        CC="$$CCB -target x86_64-unknown-freebsd15.1 -B$$(dirname $$CCB)" \
+            LD="$$LDB" AWK="$$AWKB" NM="$$NMB" ELFDUMP=elfdump S="$$SYS" \
+            sh "$$SHF"
+        mv sigtramp.pico elf-vdso.so.o elf-vdso.so.1 vdso_offsets.h "$$OUT/"
+        cd .. && rm -rf t
+    """,
+    tools = [
+        "@kernel_llvm//:bin/clang",
+        "@kernel_llvm//:bin/ld.lld",
+        "@kernel_llvm//:bin/llvm-nm",
+        "//usr.bin/awk:awk",
+    ],
+)
+
+genrule(
+    name = "vdso_ia32",
+    srcs = [
+        ":ia32_assym",
+        ":config",
+        "//:amd64_include",
+        "//:x86_include",
+        "//:i386_include",
+        "//:sys_headers",
+        "//:sys/tools/amd64_ia32_vdso.sh",
+        "//:sys/amd64/ia32/ia32_sigtramp.S",
+        "//:sys/tools/vdso_wrap.S",
+        "//:sys/conf/vdso_amd64_ia32.ldscript",
+    ],
+    outs = [
+        "ia32_sigtramp.pico",
+        "elf-vdso32.so.o",
+        "elf-vdso32.so.1",
+        "vdso_ia32_offsets.h",
+    ],
+    cmd = """
+        CCB=$$PWD/$(location @kernel_llvm//:bin/clang)
+        LDB=$$PWD/$(location @kernel_llvm//:bin/ld.lld)
+        NMB=$$PWD/$(location @kernel_llvm//:bin/llvm-nm)
+        AWKB=$$PWD/$(location //usr.bin/awk:awk)
+        SHF=$$PWD/$(location //:sys/tools/amd64_ia32_vdso.sh)
+        SYS=$$PWD/sys
+        G=$$PWD/$(GENDIR)/sys/BZL
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        cp "$$G/opt_global.h" .
+        cp "$$G/ia32_assym.h" .
+        ln -s "$$SYS/amd64/include" machine
+        ln -s "$$SYS/x86/include" x86
+        ln -s "$$SYS/i386/include" i386
+        CC="$$CCB -target x86_64-unknown-freebsd15.1 -B$$(dirname $$CCB)" \
+            LD="$$LDB" AWK="$$AWKB" NM="$$NMB" ELFDUMP=elfdump S="$$SYS" \
+            sh "$$SHF"
+        mv ia32_sigtramp.pico elf-vdso32.so.o elf-vdso32.so.1 vdso_ia32_offsets.h "$$OUT/"
+        cd .. && rm -rf t
+    """,
+    tools = [
+        "@kernel_llvm//:bin/clang",
+        "@kernel_llvm//:bin/ld.lld",
+        "@kernel_llvm//:bin/llvm-nm",
+        "//usr.bin/awk:awk",
+    ],
+)
+
+# The rpctlscd/rpctlssd rpcgen outputs, as kern.pre.mk's RPCGEN rules run
+# them (rpcgen preprocesses through $CPP; the reference's cpp is the
+# toolchain's clang-cpp).
+genrule(
+    name = "rpctlscd_gen",
+    srcs = ["//:sys/rpc/rpcsec_tls/rpctlscd.x"],
+    outs = [
+        "rpctlscd.h",
+        "rpctlscd_xdr.c",
+        "rpctlscd_clnt.c",
+    ],
+    cmd = """
+        RG=$$PWD/$(location //usr.bin/rpcgen:rpcgen)
+        CPPB=$$PWD/$(location @kernel_llvm//:bin/clang-cpp)
+        X=$$PWD/$(location //:sys/rpc/rpcsec_tls/rpctlscd.x)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        export CPP="$$CPPB -target x86_64-unknown-freebsd15.1 -B$$(dirname $$CPPB)"
+        "$$RG" -hM "$$X" | grep -v pthread.h > "$$OUT/rpctlscd.h"
+        "$$RG" -c "$$X" -o "$$OUT/rpctlscd_xdr.c"
+        "$$RG" -lM "$$X" | grep -v string.h > "$$OUT/rpctlscd_clnt.c"
+        cd .. && rm -rf t
+    """,
+    tools = [
+        "//usr.bin/rpcgen:rpcgen",
+        "@kernel_llvm//:bin/clang-cpp",
+    ],
+)
+
+genrule(
+    name = "rpctlssd_gen",
+    srcs = ["//:sys/rpc/rpcsec_tls/rpctlssd.x"],
+    outs = [
+        "rpctlssd.h",
+        "rpctlssd_xdr.c",
+        "rpctlssd_clnt.c",
+    ],
+    cmd = """
+        RG=$$PWD/$(location //usr.bin/rpcgen:rpcgen)
+        CPPB=$$PWD/$(location @kernel_llvm//:bin/clang-cpp)
+        X=$$PWD/$(location //:sys/rpc/rpcsec_tls/rpctlssd.x)
+        OUT=$$PWD/$(RULEDIR)
+        mkdir t && cd t
+        export CPP="$$CPPB -target x86_64-unknown-freebsd15.1 -B$$(dirname $$CPPB)"
+        "$$RG" -hM "$$X" | grep -v pthread.h > "$$OUT/rpctlssd.h"
+        "$$RG" -c "$$X" -o "$$OUT/rpctlssd_xdr.c"
+        "$$RG" -lM "$$X" | grep -v string.h > "$$OUT/rpctlssd_clnt.c"
+        cd .. && rm -rf t
+    """,
+    tools = [
+        "//usr.bin/rpcgen:rpcgen",
+        "@kernel_llvm//:bin/clang-cpp",
+    ],
+)
+
+# The BFD dynamic-mode hack: an empty translation unit (kern.post.mk's
+# ":> ${.TARGET}"), compiled with the kernel's line and linked -shared so
+# the kernel link stays in dynamic mode.
+genrule(
+    name = "force-dynamic-hack.c",
+    outs = ["force-dynamic-hack.c"],
+    cmd = ": > '$(location :force-dynamic-hack.c)'",
+)
+
+load("//bazel/rules:freebsd_kernel_link.bzl", "freebsd_kernel_link")
+
+# The BFD dynamic-mode hack, as the reference builds it: the empty TU compiled
+# with the kernel's line (cc_060), then the driver links it -shared into the
+# .pico (kern.post.mk's .pico rule: the kernel's compile flags ride the link
+# line; -MD/-MF/-MT track bmake's .depend side file, which has no artifact
+# here). The objcopy endgame does not run -- out/debug_out unset.
+freebsd_kernel_link(
+    name = "force-dynamic-hack",
+    out = "force-dynamic-hack.pico",
+    driver = "@kernel_llvm//:bin/clang",
+    args = [
+        "-target",
+        "x86_64-unknown-freebsd15.1",
+        "--ld-path=$(location @kernel_llvm//:bin/ld.lld)",
+        "-shared",
+        "-O2",
+        "-pipe",
+        "-fno-strict-aliasing",
+        "-g",
+        "-nostdinc",
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-D_KERNEL",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-fno-common",
+        "-fno-omit-frame-pointer",
+        "-mno-omit-leaf-frame-pointer",
+        "-ffile-prefix-map=$(GENDIR)/sys/BZL=/usr/obj/usr/src/amd64.amd64/sys/BZL",
+        "-mcmodel=kernel",
+        "-mno-red-zone",
+        "-mno-mmx",
+        "-mno-sse",
+        "-msoft-float",
+        "-fno-asynchronous-unwind-tables",
+        "-ffreestanding",
+        "-fwrapv",
+        "-fstack-protector",
+        "-gdwarf-4",
+        "-Wall",
+        "-Wstrict-prototypes",
+        "-Wmissing-prototypes",
+        "-Wpointer-arith",
+        "-Wcast-qual",
+        "-Wundef",
+        "-Wno-pointer-sign",
+        "-D__printf__=__freebsd_kprintf__",
+        "-Wmissing-include-dirs",
+        "-fdiagnostics-show-option",
+        "-Wno-unknown-pragmas",
+        "-Wswitch",
+        "-Wno-error=tautological-compare",
+        "-Wno-error=empty-body",
+        "-Wno-error=parentheses-equality",
+        "-Wno-error=unused-function",
+        "-Wno-error=pointer-sign",
+        "-Wno-error=shift-negative-value",
+        "-Wno-address-of-packed-member",
+        "-Wno-format-zero-length",
+        "-mno-aes",
+        "-mno-avx",
+        "-std=gnu17",
+        "-nostdlib",
+    ],
+    srcs = [
+        "@kernel_llvm//:bin/ld.lld",
+        "//:sys_headers",
+    ],
+    deps = [":cc_060"],
+)
+
+cc_per_source_library(
+    name = "cc_000",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-fcommon"
+    ],
+    srcs = [
+    "//:sys/kern/genoffset.c",
+    ],
+    hdrs = [
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+# The genassym objects: their compiles read offset.inc (kpilite.h pulls it in
+# whenever GENOFFSET is undefined), so they sit behind the offset generator.
+cc_per_source_library(
+    name = "cc_061",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-fcommon"
+    ],
+    srcs = [
+    "//:sys/amd64/amd64/genassym.c",
+    "//:sys/compat/ia32/ia32_genassym.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_001",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-fcommon",
+        "-DOFFSET_TEST"
+    ],
+    srcs = [
+    "//:sys/kern/genoffset.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_002",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-x",
+        "assembler-with-cpp",
+        "-DLOCORE",
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    "//:sys/amd64/amd64/cpu_switch.S",
+    "//:sys/amd64/amd64/efirt_support.S",
+    "//:sys/amd64/amd64/exception.S",
+    "//:sys/amd64/amd64/locore.S",
+    "//:sys/amd64/amd64/mpboot.S",
+    "//:sys/amd64/amd64/support.S",
+    "//:sys/crypto/aesni/aeskeys_amd64.S",
+    "//:sys/kern/subr_ticks.S",
+    ],
+    hdrs = [
+        "//:sys/amd64/ia32/ia32_exception.S",
+        "//:sys/amd64/amd64/apic_vector.S",
+        "//:sys/amd64/amd64/atpic_vector.S",
+        ":assym_inc",
+        ":ia32_assym",
+
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+# acpi_wakecode.o is a tool object, not a kernel object: the reference
+# compiles it for the wakecode chain only, so its own target keeps it out of
+# the link's loose objects.
+cc_per_source_library(
+    name = "cc_062",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-x",
+        "assembler-with-cpp",
+        "-DLOCORE",
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    "//:sys/amd64/acpica/acpi_wakecode.S",
+    ],
+    hdrs = [
+        ":assym_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_003",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    "//:sys/amd64/acpica/acpi_machdep.c",
+    "//:sys/amd64/acpica/acpi_wakeup.c",
+    "//:sys/amd64/amd64/bios.c",
+    "//:sys/amd64/amd64/copyout.c",
+    "//:sys/amd64/amd64/db_disasm.c",
+    "//:sys/amd64/amd64/db_interface.c",
+    "//:sys/amd64/amd64/db_trace.c",
+    "//:sys/amd64/amd64/efirt_machdep.c",
+    "//:sys/amd64/amd64/elf_machdep.c",
+    "//:sys/amd64/amd64/exec_machdep.c",
+    "//:sys/amd64/amd64/fpu.c",
+    "//:sys/amd64/amd64/gdb_machdep.c",
+    "//:sys/amd64/amd64/initcpu.c",
+    "//:sys/amd64/amd64/io.c",
+    "//:sys/amd64/amd64/machdep.c",
+    "//:sys/amd64/amd64/mem.c",
+    "//:sys/amd64/amd64/minidump_machdep.c",
+    "//:sys/amd64/amd64/mp_machdep.c",
+    "//:sys/amd64/amd64/pmap.c",
+    "//:sys/amd64/amd64/ptrace_machdep.c",
+    "//:sys/amd64/amd64/sys_machdep.c",
+    "//:sys/amd64/amd64/trap.c",
+    "//:sys/amd64/amd64/uio_machdep.c",
+    "//:sys/amd64/amd64/vm_machdep.c",
+    "//:sys/amd64/ia32/ia32_misc.c",
+    "//:sys/amd64/ia32/ia32_reg.c",
+    "//:sys/amd64/ia32/ia32_signal.c",
+    "//:sys/amd64/ia32/ia32_syscall.c",
+    "//:sys/amd64/pci/pci_cfgreg.c",
+    "//:sys/compat/freebsd32/freebsd32_abort2.c",
+    "//:sys/compat/freebsd32/freebsd32_capability.c",
+    "//:sys/compat/freebsd32/freebsd32_ioctl.c",
+    "//:sys/compat/freebsd32/freebsd32_misc.c",
+    "//:sys/compat/freebsd32/freebsd32_syscalls.c",
+    "//:sys/compat/freebsd32/freebsd32_sysent.c",
+    "//:sys/compat/ia32/ia32_sysvec.c",
+    "//:sys/compat/x86bios/x86bios.c",
+    "//:sys/contrib/dev/acpica/components/dispatcher/dsargs.c",
+    "//:sys/contrib/dev/acpica/components/dispatcher/dscontrol.c",
+    "//:sys/contrib/dev/acpica/components/dispatcher/dsdebug.c",
+    "//:sys/contrib/dev/acpica/components/dispatcher/dsfield.c",
+    "//:sys/contrib/dev/acpica/components/dispatcher/dsinit.c",
+    "//:sys/contrib/dev/acpica/components/dispatcher/dsmethod.c",
+    "//:sys/contrib/dev/acpica/components/dispatcher/dsmthdat.c",
+    "//:sys/contrib/dev/acpica/components/dispatcher/dsobject.c",
+    "//:sys/contrib/dev/acpica/components/dispatcher/dsopcode.c",
+    "//:sys/contrib/dev/acpica/components/dispatcher/dspkginit.c",
+    "//:sys/contrib/dev/acpica/components/dispatcher/dsutils.c",
+    "//:sys/contrib/dev/acpica/components/dispatcher/dswexec.c",
+    "//:sys/contrib/dev/acpica/components/dispatcher/dswload.c",
+    "//:sys/contrib/dev/acpica/components/dispatcher/dswload2.c",
+    "//:sys/contrib/dev/acpica/components/dispatcher/dswscope.c",
+    "//:sys/contrib/dev/acpica/components/dispatcher/dswstate.c",
+    "//:sys/contrib/dev/acpica/components/events/evevent.c",
+    "//:sys/contrib/dev/acpica/components/events/evglock.c",
+    "//:sys/contrib/dev/acpica/components/events/evgpe.c",
+    "//:sys/contrib/dev/acpica/components/events/evgpeblk.c",
+    "//:sys/contrib/dev/acpica/components/events/evgpeinit.c",
+    "//:sys/contrib/dev/acpica/components/events/evgpeutil.c",
+    "//:sys/contrib/dev/acpica/components/events/evhandler.c",
+    "//:sys/contrib/dev/acpica/components/events/evmisc.c",
+    "//:sys/contrib/dev/acpica/components/events/evregion.c",
+    "//:sys/contrib/dev/acpica/components/events/evrgnini.c",
+    "//:sys/contrib/dev/acpica/components/events/evsci.c",
+    "//:sys/contrib/dev/acpica/components/events/evxface.c",
+    "//:sys/contrib/dev/acpica/components/events/evxfevnt.c",
+    "//:sys/contrib/dev/acpica/components/events/evxfgpe.c",
+    "//:sys/contrib/dev/acpica/components/events/evxfregn.c",
+    "//:sys/contrib/dev/acpica/components/executer/exconcat.c",
+    "//:sys/contrib/dev/acpica/components/executer/exconfig.c",
+    "//:sys/contrib/dev/acpica/components/executer/exconvrt.c",
+    "//:sys/contrib/dev/acpica/components/executer/excreate.c",
+    "//:sys/contrib/dev/acpica/components/executer/exdebug.c",
+    "//:sys/contrib/dev/acpica/components/executer/exdump.c",
+    "//:sys/contrib/dev/acpica/components/executer/exfield.c",
+    "//:sys/contrib/dev/acpica/components/executer/exfldio.c",
+    "//:sys/contrib/dev/acpica/components/executer/exmisc.c",
+    "//:sys/contrib/dev/acpica/components/executer/exmutex.c",
+    "//:sys/contrib/dev/acpica/components/executer/exnames.c",
+    "//:sys/contrib/dev/acpica/components/executer/exoparg1.c",
+    "//:sys/contrib/dev/acpica/components/executer/exoparg2.c",
+    "//:sys/contrib/dev/acpica/components/executer/exoparg3.c",
+    "//:sys/contrib/dev/acpica/components/executer/exoparg6.c",
+    "//:sys/contrib/dev/acpica/components/executer/exprep.c",
+    "//:sys/contrib/dev/acpica/components/executer/exregion.c",
+    "//:sys/contrib/dev/acpica/components/executer/exresnte.c",
+    "//:sys/contrib/dev/acpica/components/executer/exresolv.c",
+    "//:sys/contrib/dev/acpica/components/executer/exresop.c",
+    "//:sys/contrib/dev/acpica/components/executer/exserial.c",
+    "//:sys/contrib/dev/acpica/components/executer/exstore.c",
+    "//:sys/contrib/dev/acpica/components/executer/exstoren.c",
+    "//:sys/contrib/dev/acpica/components/executer/exstorob.c",
+    "//:sys/contrib/dev/acpica/components/executer/exsystem.c",
+    "//:sys/contrib/dev/acpica/components/executer/extrace.c",
+    "//:sys/contrib/dev/acpica/components/executer/exutils.c",
+    "//:sys/contrib/dev/acpica/components/hardware/hwacpi.c",
+    "//:sys/contrib/dev/acpica/components/hardware/hwesleep.c",
+    "//:sys/contrib/dev/acpica/components/hardware/hwgpe.c",
+    "//:sys/contrib/dev/acpica/components/hardware/hwpci.c",
+    "//:sys/contrib/dev/acpica/components/hardware/hwregs.c",
+    "//:sys/contrib/dev/acpica/components/hardware/hwsleep.c",
+    "//:sys/contrib/dev/acpica/components/hardware/hwtimer.c",
+    "//:sys/contrib/dev/acpica/components/hardware/hwvalid.c",
+    "//:sys/contrib/dev/acpica/components/hardware/hwxface.c",
+    "//:sys/contrib/dev/acpica/components/hardware/hwxfsleep.c",
+    "//:sys/contrib/dev/acpica/components/namespace/nsalloc.c",
+    "//:sys/contrib/dev/acpica/components/namespace/nsarguments.c",
+    "//:sys/contrib/dev/acpica/components/namespace/nsconvert.c",
+    "//:sys/contrib/dev/acpica/components/namespace/nsdump.c",
+    "//:sys/contrib/dev/acpica/components/namespace/nseval.c",
+    "//:sys/contrib/dev/acpica/components/namespace/nsinit.c",
+    "//:sys/contrib/dev/acpica/components/namespace/nsload.c",
+    "//:sys/contrib/dev/acpica/components/namespace/nsnames.c",
+    "//:sys/contrib/dev/acpica/components/namespace/nsobject.c",
+    "//:sys/contrib/dev/acpica/components/namespace/nsparse.c",
+    "//:sys/contrib/dev/acpica/components/namespace/nspredef.c",
+    "//:sys/contrib/dev/acpica/components/namespace/nsprepkg.c",
+    "//:sys/contrib/dev/acpica/components/namespace/nsrepair.c",
+    "//:sys/contrib/dev/acpica/components/namespace/nsrepair2.c",
+    "//:sys/contrib/dev/acpica/components/namespace/nssearch.c",
+    "//:sys/contrib/dev/acpica/components/namespace/nsutils.c",
+    "//:sys/contrib/dev/acpica/components/namespace/nswalk.c",
+    "//:sys/contrib/dev/acpica/components/namespace/nsxfeval.c",
+    "//:sys/contrib/dev/acpica/components/namespace/nsxfname.c",
+    "//:sys/contrib/dev/acpica/components/namespace/nsxfobj.c",
+    "//:sys/contrib/dev/acpica/components/parser/psargs.c",
+    "//:sys/contrib/dev/acpica/components/parser/psloop.c",
+    "//:sys/contrib/dev/acpica/components/parser/psobject.c",
+    "//:sys/contrib/dev/acpica/components/parser/psopcode.c",
+    "//:sys/contrib/dev/acpica/components/parser/psopinfo.c",
+    "//:sys/contrib/dev/acpica/components/parser/psparse.c",
+    "//:sys/contrib/dev/acpica/components/parser/psscope.c",
+    "//:sys/contrib/dev/acpica/components/parser/pstree.c",
+    "//:sys/contrib/dev/acpica/components/parser/psutils.c",
+    "//:sys/contrib/dev/acpica/components/parser/pswalk.c",
+    "//:sys/contrib/dev/acpica/components/parser/psxface.c",
+    "//:sys/contrib/dev/acpica/components/resources/rsaddr.c",
+    "//:sys/contrib/dev/acpica/components/resources/rscalc.c",
+    "//:sys/contrib/dev/acpica/components/resources/rscreate.c",
+    "//:sys/contrib/dev/acpica/components/resources/rsdumpinfo.c",
+    "//:sys/contrib/dev/acpica/components/resources/rsinfo.c",
+    "//:sys/contrib/dev/acpica/components/resources/rsio.c",
+    "//:sys/contrib/dev/acpica/components/resources/rsirq.c",
+    "//:sys/contrib/dev/acpica/components/resources/rslist.c",
+    "//:sys/contrib/dev/acpica/components/resources/rsmemory.c",
+    "//:sys/contrib/dev/acpica/components/resources/rsmisc.c",
+    "//:sys/contrib/dev/acpica/components/resources/rsserial.c",
+    "//:sys/contrib/dev/acpica/components/resources/rsutils.c",
+    "//:sys/contrib/dev/acpica/components/resources/rsxface.c",
+    "//:sys/contrib/dev/acpica/components/tables/tbdata.c",
+    "//:sys/contrib/dev/acpica/components/tables/tbfadt.c",
+    "//:sys/contrib/dev/acpica/components/tables/tbfind.c",
+    "//:sys/contrib/dev/acpica/components/tables/tbinstal.c",
+    "//:sys/contrib/dev/acpica/components/tables/tbprint.c",
+    "//:sys/contrib/dev/acpica/components/tables/tbutils.c",
+    "//:sys/contrib/dev/acpica/components/tables/tbxface.c",
+    "//:sys/contrib/dev/acpica/components/tables/tbxfload.c",
+    "//:sys/contrib/dev/acpica/components/tables/tbxfroot.c",
+    "//:sys/contrib/dev/acpica/components/utilities/utaddress.c",
+    "//:sys/contrib/dev/acpica/components/utilities/utalloc.c",
+    "//:sys/contrib/dev/acpica/components/utilities/utascii.c",
+    "//:sys/contrib/dev/acpica/components/utilities/utbuffer.c",
+    "//:sys/contrib/dev/acpica/components/utilities/utcache.c",
+    "//:sys/contrib/dev/acpica/components/utilities/utcksum.c",
+    "//:sys/contrib/dev/acpica/components/utilities/utcopy.c",
+    "//:sys/contrib/dev/acpica/components/utilities/utdebug.c",
+    "//:sys/contrib/dev/acpica/components/utilities/utdecode.c",
+    "//:sys/contrib/dev/acpica/components/utilities/utdelete.c",
+    "//:sys/contrib/dev/acpica/components/utilities/uterror.c",
+    "//:sys/contrib/dev/acpica/components/utilities/uteval.c",
+    "//:sys/contrib/dev/acpica/components/utilities/utexcep.c",
+    "//:sys/contrib/dev/acpica/components/utilities/utglobal.c",
+    "//:sys/contrib/dev/acpica/components/utilities/uthex.c",
+    "//:sys/contrib/dev/acpica/components/utilities/utids.c",
+    "//:sys/contrib/dev/acpica/components/utilities/utinit.c",
+    "//:sys/contrib/dev/acpica/components/utilities/utlock.c",
+    "//:sys/contrib/dev/acpica/components/utilities/utmath.c",
+    "//:sys/contrib/dev/acpica/components/utilities/utmisc.c",
+    "//:sys/contrib/dev/acpica/components/utilities/utmutex.c",
+    "//:sys/contrib/dev/acpica/components/utilities/utnonansi.c",
+    "//:sys/contrib/dev/acpica/components/utilities/utobject.c",
+    "//:sys/contrib/dev/acpica/components/utilities/utosi.c",
+    "//:sys/contrib/dev/acpica/components/utilities/utownerid.c",
+    "//:sys/contrib/dev/acpica/components/utilities/utpredef.c",
+    "//:sys/contrib/dev/acpica/components/utilities/utresrc.c",
+    "//:sys/contrib/dev/acpica/components/utilities/utstate.c",
+    "//:sys/contrib/dev/acpica/components/utilities/utstring.c",
+    "//:sys/contrib/dev/acpica/components/utilities/utstrsuppt.c",
+    "//:sys/contrib/dev/acpica/components/utilities/utstrtoul64.c",
+    "//:sys/contrib/dev/acpica/components/utilities/utxface.c",
+    "//:sys/contrib/dev/acpica/components/utilities/utxferror.c",
+    "//:sys/contrib/dev/acpica/components/utilities/utxfinit.c",
+    "//:sys/contrib/libnv/bsd_nvpair.c",
+    "//:sys/contrib/libnv/cnvlist.c",
+    "//:sys/contrib/libnv/dnvlist.c",
+    "//:sys/contrib/libnv/nvlist.c",
+    "//:sys/contrib/x86emu/x86emu.c",
+    "//:sys/crypto/aesni/aesni.c",
+    "//:sys/crypto/camellia/camellia-api.c",
+    "//:sys/crypto/camellia/camellia.c",
+    "//:sys/crypto/chacha20/chacha-sw.c",
+    "//:sys/crypto/chacha20/chacha.c",
+    "//:sys/crypto/chacha20_poly1305.c",
+    "//:sys/crypto/md5c.c",
+    "//:sys/crypto/rijndael/rijndael-alg-fst.c",
+    "//:sys/crypto/rijndael/rijndael-api-fst.c",
+    "//:sys/crypto/rijndael/rijndael-api.c",
+    "//:sys/crypto/sha1.c",
+    "//:sys/crypto/sha2/sha256c.c",
+    "//:sys/crypto/sha2/sha512c.c",
+    "//:sys/crypto/siphash/siphash.c",
+    "//:sys/crypto/siphash/siphash_test.c",
+    "//:sys/crypto/skein/skein.c",
+    "//:sys/crypto/skein/skein_block.c",
+    "//:sys/ddb/db_access.c",
+    "//:sys/ddb/db_break.c",
+    "//:sys/ddb/db_capture.c",
+    "//:sys/ddb/db_command.c",
+    "//:sys/ddb/db_ctf.c",
+    "//:sys/ddb/db_examine.c",
+    "//:sys/ddb/db_expr.c",
+    "//:sys/ddb/db_input.c",
+    "//:sys/ddb/db_lex.c",
+    "//:sys/ddb/db_main.c",
+    "//:sys/ddb/db_output.c",
+    "//:sys/ddb/db_pprint.c",
+    "//:sys/ddb/db_print.c",
+    "//:sys/ddb/db_ps.c",
+    "//:sys/ddb/db_run.c",
+    "//:sys/ddb/db_script.c",
+    "//:sys/ddb/db_sym.c",
+    "//:sys/ddb/db_textdump.c",
+    "//:sys/ddb/db_thread.c",
+    "//:sys/ddb/db_variables.c",
+    "//:sys/ddb/db_watch.c",
+    "//:sys/ddb/db_write_cmd.c",
+    "//:sys/dev/acpica/Osd/OsdDebug.c",
+    "//:sys/dev/acpica/Osd/OsdHardware.c",
+    "//:sys/dev/acpica/Osd/OsdInterrupt.c",
+    "//:sys/dev/acpica/Osd/OsdMemory.c",
+    "//:sys/dev/acpica/Osd/OsdSchedule.c",
+    "//:sys/dev/acpica/Osd/OsdStream.c",
+    "//:sys/dev/acpica/Osd/OsdSynch.c",
+    "//:sys/dev/acpica/Osd/OsdTable.c",
+    "//:sys/dev/acpica/acpi.c",
+    "//:sys/dev/acpica/acpi_acad.c",
+    "//:sys/dev/acpica/acpi_apei.c",
+    "//:sys/dev/acpica/acpi_battery.c",
+    "//:sys/dev/acpica/acpi_button.c",
+    "//:sys/dev/acpica/acpi_cmbat.c",
+    "//:sys/dev/acpica/acpi_container.c",
+    "//:sys/dev/acpica/acpi_cpu.c",
+    "//:sys/dev/acpica/acpi_ec.c",
+    "//:sys/dev/acpica/acpi_hpet.c",
+    "//:sys/dev/acpica/acpi_isab.c",
+    "//:sys/dev/acpica/acpi_lid.c",
+    "//:sys/dev/acpica/acpi_package.c",
+    "//:sys/dev/acpica/acpi_pci.c",
+    "//:sys/dev/acpica/acpi_pci_link.c",
+    "//:sys/dev/acpica/acpi_pcib.c",
+    "//:sys/dev/acpica/acpi_pcib_acpi.c",
+    "//:sys/dev/acpica/acpi_pcib_pci.c",
+    "//:sys/dev/acpica/acpi_perf.c",
+    "//:sys/dev/acpica/acpi_powerres.c",
+    "//:sys/dev/acpica/acpi_pxm.c",
+    "//:sys/dev/acpica/acpi_quirk.c",
+    "//:sys/dev/acpica/acpi_resource.c",
+    "//:sys/dev/acpica/acpi_smbat.c",
+    "//:sys/dev/acpica/acpi_thermal.c",
+    "//:sys/dev/acpica/acpi_throttle.c",
+    "//:sys/dev/acpica/acpi_timer.c",
+    "//:sys/dev/efidev/efidev.c",
+    "//:sys/dev/efidev/efirt.c",
+    "//:sys/dev/efidev/efirtc.c",
+    "//:sys/dev/io/iodev.c",
+    "//:sys/dev/kvm_clock/kvm_clock.c",
+    "//:sys/dev/led/led.c",
+    "//:sys/dev/md/md.c",
+    "//:sys/dev/mem/memdev.c",
+    "//:sys/dev/mem/memutil.c",
+    "//:sys/dev/netmap/if_ptnet.c",
+    "//:sys/dev/netmap/netmap.c",
+    "//:sys/dev/netmap/netmap_bdg.c",
+    "//:sys/dev/netmap/netmap_freebsd.c",
+    "//:sys/dev/netmap/netmap_generic.c",
+    "//:sys/dev/netmap/netmap_kloop.c",
+    "//:sys/dev/netmap/netmap_legacy.c",
+    "//:sys/dev/netmap/netmap_mbq.c",
+    "//:sys/dev/netmap/netmap_mem2.c",
+    "//:sys/dev/netmap/netmap_monitor.c",
+    "//:sys/dev/netmap/netmap_null.c",
+    "//:sys/dev/netmap/netmap_offloadings.c",
+    "//:sys/dev/netmap/netmap_pipe.c",
+    "//:sys/dev/netmap/netmap_vale.c",
+    "//:sys/dev/null/null.c",
+    "//:sys/dev/pci/fixup_pci.c",
+    "//:sys/dev/pci/hostb_pci.c",
+    "//:sys/dev/pci/ignore_pci.c",
+    "//:sys/dev/pci/isa_pci.c",
+    "//:sys/dev/pci/pci.c",
+    "//:sys/dev/pci/pci_pci.c",
+    "//:sys/dev/pci/pci_subr.c",
+    "//:sys/dev/pci/pci_user.c",
+    "//:sys/dev/pci/pcib_support.c",
+    "//:sys/dev/pci/vga_pci.c",
+    "//:sys/dev/random/fortuna.c",
+    "//:sys/dev/random/hash.c",
+    "//:sys/dev/random/ivy.c",
+    "//:sys/dev/random/random_harvestq.c",
+    "//:sys/dev/random/random_infra.c",
+    "//:sys/dev/random/randomdev.c",
+    "//:sys/dev/random/rdseed.c",
+    "//:sys/dev/smbios/smbios_subr.c",
+    "//:sys/dev/tcp_log/tcp_log_dev.c",
+    "//:sys/dev/uart/uart_bus_acpi.c",
+    "//:sys/dev/uart/uart_bus_isa.c",
+    "//:sys/dev/uart/uart_bus_pci.c",
+    "//:sys/dev/uart/uart_core.c",
+    "//:sys/dev/uart/uart_cpu_acpi.c",
+    "//:sys/dev/uart/uart_cpu_x86.c",
+    "//:sys/dev/uart/uart_dbg.c",
+    "//:sys/dev/uart/uart_dev_ns8250.c",
+    "//:sys/dev/uart/uart_subr.c",
+    "//:sys/dev/uart/uart_tty.c",
+    "//:sys/dev/virtio/block/virtio_blk.c",
+    "//:sys/dev/virtio/mmio/virtio_mmio.c",
+    "//:sys/dev/virtio/mmio/virtio_mmio_acpi.c",
+    "//:sys/dev/virtio/mmio/virtio_mmio_cmdline.c",
+    "//:sys/dev/virtio/network/if_vtnet.c",
+    "//:sys/dev/virtio/pci/virtio_pci.c",
+    "//:sys/dev/virtio/pci/virtio_pci_legacy.c",
+    "//:sys/dev/virtio/pci/virtio_pci_modern.c",
+    "//:sys/dev/virtio/virtio.c",
+    "//:sys/dev/virtio/virtqueue.c",
+    "//:sys/dev/vmgenc/vmgenc_acpi.c",
+    "//:sys/dev/watchdog/watchdog.c",
+    "//:sys/dev/xen/balloon/balloon.c",
+    "//:sys/dev/xen/blkback/blkback.c",
+    "//:sys/dev/xen/blkfront/blkfront.c",
+    "//:sys/dev/xen/bus/xen_intr.c",
+    "//:sys/dev/xen/bus/xenpv.c",
+    "//:sys/dev/xen/console/xen_console.c",
+    "//:sys/dev/xen/control/control.c",
+    "//:sys/dev/xen/cpu/xen_acpi_cpu.c",
+    "//:sys/dev/xen/debug/debug.c",
+    "//:sys/dev/xen/evtchn/evtchn_dev.c",
+    "//:sys/dev/xen/gntdev/gntdev.c",
+    "//:sys/dev/xen/grant_table/grant_table.c",
+    "//:sys/dev/xen/netback/netback.c",
+    "//:sys/dev/xen/netfront/netfront.c",
+    "//:sys/dev/xen/privcmd/privcmd.c",
+    "//:sys/dev/xen/timer/xen_timer.c",
+    "//:sys/dev/xen/xenpci/xenpci.c",
+    "//:sys/dev/xen/xenstore/xenstore.c",
+    "//:sys/dev/xen/xenstore/xenstore_dev.c",
+    "//:sys/dev/xen/xenstore/xenstored_dev.c",
+    "//:sys/dev/zlib/zcalloc.c",
+    "//:sys/dev/zlib/zlib_mod.c",
+    "//:sys/fs/cd9660/cd9660_bmap.c",
+    "//:sys/fs/cd9660/cd9660_lookup.c",
+    "//:sys/fs/cd9660/cd9660_node.c",
+    "//:sys/fs/cd9660/cd9660_rrip.c",
+    "//:sys/fs/cd9660/cd9660_util.c",
+    "//:sys/fs/cd9660/cd9660_vfsops.c",
+    "//:sys/fs/cd9660/cd9660_vnops.c",
+    "//:sys/fs/deadfs/dead_vnops.c",
+    "//:sys/fs/devfs/devfs_devs.c",
+    "//:sys/fs/devfs/devfs_dir.c",
+    "//:sys/fs/devfs/devfs_rule.c",
+    "//:sys/fs/devfs/devfs_vfsops.c",
+    "//:sys/fs/devfs/devfs_vnops.c",
+    "//:sys/fs/fifofs/fifo_vnops.c",
+    "//:sys/fs/mntfs/mntfs_vnops.c",
+    "//:sys/fs/msdosfs/msdosfs_conv.c",
+    "//:sys/fs/msdosfs/msdosfs_denode.c",
+    "//:sys/fs/msdosfs/msdosfs_fat.c",
+    "//:sys/fs/msdosfs/msdosfs_lookup.c",
+    "//:sys/fs/msdosfs/msdosfs_vfsops.c",
+    "//:sys/fs/msdosfs/msdosfs_vnops.c",
+    "//:sys/fs/nfs/nfs_commonacl.c",
+    "//:sys/fs/nfs/nfs_commonkrpc.c",
+    "//:sys/fs/nfs/nfs_commonport.c",
+    "//:sys/fs/nfs/nfs_commonsubs.c",
+    "//:sys/fs/nfsclient/nfs_clbio.c",
+    "//:sys/fs/nfsclient/nfs_clcomsubs.c",
+    "//:sys/fs/nfsclient/nfs_clkrpc.c",
+    "//:sys/fs/nfsclient/nfs_clnfsiod.c",
+    "//:sys/fs/nfsclient/nfs_clnode.c",
+    "//:sys/fs/nfsclient/nfs_clport.c",
+    "//:sys/fs/nfsclient/nfs_clrpcops.c",
+    "//:sys/fs/nfsclient/nfs_clstate.c",
+    "//:sys/fs/nfsclient/nfs_clsubs.c",
+    "//:sys/fs/nfsclient/nfs_clvfsops.c",
+    "//:sys/fs/nfsclient/nfs_clvnops.c",
+    "//:sys/fs/nfsserver/nfs_fha_new.c",
+    "//:sys/fs/nfsserver/nfs_nfsdcache.c",
+    "//:sys/fs/nfsserver/nfs_nfsdkrpc.c",
+    "//:sys/fs/nfsserver/nfs_nfsdport.c",
+    "//:sys/fs/nfsserver/nfs_nfsdserv.c",
+    "//:sys/fs/nfsserver/nfs_nfsdsocket.c",
+    "//:sys/fs/nfsserver/nfs_nfsdstate.c",
+    "//:sys/fs/nfsserver/nfs_nfsdsubs.c",
+    "//:sys/fs/procfs/procfs.c",
+    "//:sys/fs/procfs/procfs_dbregs.c",
+    "//:sys/fs/procfs/procfs_fpregs.c",
+    "//:sys/fs/procfs/procfs_map.c",
+    "//:sys/fs/procfs/procfs_mem.c",
+    "//:sys/fs/procfs/procfs_note.c",
+    "//:sys/fs/procfs/procfs_osrel.c",
+    "//:sys/fs/procfs/procfs_regs.c",
+    "//:sys/fs/procfs/procfs_rlimit.c",
+    "//:sys/fs/procfs/procfs_status.c",
+    "//:sys/fs/procfs/procfs_type.c",
+    "//:sys/fs/pseudofs/pseudofs.c",
+    "//:sys/fs/pseudofs/pseudofs_fileno.c",
+    "//:sys/fs/pseudofs/pseudofs_vncache.c",
+    "//:sys/fs/pseudofs/pseudofs_vnops.c",
+    "//:sys/fs/tmpfs/tmpfs_fifoops.c",
+    "//:sys/fs/tmpfs/tmpfs_subr.c",
+    "//:sys/fs/tmpfs/tmpfs_vfsops.c",
+    "//:sys/fs/tmpfs/tmpfs_vnops.c",
+    "//:sys/gdb/gdb_cons.c",
+    "//:sys/gdb/gdb_main.c",
+    "//:sys/gdb/gdb_packet.c",
+    "//:sys/gdb/netgdb.c",
+    "//:sys/geom/geom_bsd_enc.c",
+    "//:sys/geom/geom_ctl.c",
+    "//:sys/geom/geom_dev.c",
+    "//:sys/geom/geom_disk.c",
+    "//:sys/geom/geom_dump.c",
+    "//:sys/geom/geom_event.c",
+    "//:sys/geom/geom_io.c",
+    "//:sys/geom/geom_kern.c",
+    "//:sys/geom/geom_slice.c",
+    "//:sys/geom/geom_subr.c",
+    "//:sys/geom/geom_vfs.c",
+    "//:sys/geom/label/g_label.c",
+    "//:sys/geom/label/g_label_disk_ident.c",
+    "//:sys/geom/label/g_label_ext2fs.c",
+    "//:sys/geom/label/g_label_flashmap.c",
+    "//:sys/geom/label/g_label_gpt.c",
+    "//:sys/geom/label/g_label_iso9660.c",
+    "//:sys/geom/label/g_label_msdosfs.c",
+    "//:sys/geom/label/g_label_ntfs.c",
+    "//:sys/geom/label/g_label_swaplinux.c",
+    "//:sys/geom/label/g_label_ufs.c",
+    "//:sys/geom/part/g_part.c",
+    "//:sys/geom/part/g_part_bsd.c",
+    "//:sys/geom/part/g_part_ebr.c",
+    "//:sys/geom/part/g_part_gpt.c",
+    "//:sys/geom/part/g_part_mbr.c",
+    "//:sys/geom/raid/g_raid.c",
+    "//:sys/geom/raid/g_raid_ctl.c",
+    "//:sys/geom/raid/md_ddf.c",
+    "//:sys/geom/raid/md_intel.c",
+    "//:sys/geom/raid/md_jmicron.c",
+    "//:sys/geom/raid/md_nvidia.c",
+    "//:sys/geom/raid/md_promise.c",
+    "//:sys/geom/raid/md_sii.c",
+    "//:sys/geom/raid/tr_concat.c",
+    "//:sys/geom/raid/tr_raid0.c",
+    "//:sys/geom/raid/tr_raid1.c",
+    "//:sys/geom/raid/tr_raid1e.c",
+    "//:sys/geom/raid/tr_raid5.c",
+    "//:sys/isa/isa_common.c",
+    "//:sys/isa/isahint.c",
+    "//:sys/kern/coredump_vnode.c",
+    "//:sys/kern/imgact_elf.c",
+    "//:sys/kern/imgact_elf32.c",
+    "//:sys/kern/imgact_shell.c",
+    "//:sys/kern/init_main.c",
+    "//:sys/kern/init_sysent.c",
+    "//:sys/kern/kern_acct.c",
+    "//:sys/kern/kern_boottrace.c",
+    "//:sys/kern/kern_clock.c",
+    "//:sys/kern/kern_clocksource.c",
+    "//:sys/kern/kern_condvar.c",
+    "//:sys/kern/kern_conf.c",
+    "//:sys/kern/kern_cons.c",
+    "//:sys/kern/kern_context.c",
+    "//:sys/kern/kern_cpu.c",
+    "//:sys/kern/kern_cpuset.c",
+    "//:sys/kern/kern_descrip.c",
+    "//:sys/kern/kern_devctl.c",
+    "//:sys/kern/kern_dtrace.c",
+    "//:sys/kern/kern_dump.c",
+    "//:sys/kern/kern_environment.c",
+    "//:sys/kern/kern_et.c",
+    "//:sys/kern/kern_event.c",
+    "//:sys/kern/kern_exec.c",
+    "//:sys/kern/kern_exit.c",
+    "//:sys/kern/kern_fail.c",
+    "//:sys/kern/kern_ffclock.c",
+    "//:sys/kern/kern_fork.c",
+    "//:sys/kern/kern_hhook.c",
+    "//:sys/kern/kern_idle.c",
+    "//:sys/kern/kern_intr.c",
+    "//:sys/kern/kern_jail.c",
+    "//:sys/kern/kern_jaildesc.c",
+    "//:sys/kern/kern_jailmeta.c",
+    "//:sys/kern/kern_khelp.c",
+    "//:sys/kern/kern_kthread.c",
+    "//:sys/kern/kern_ktrace.c",
+    "//:sys/kern/kern_linker.c",
+    "//:sys/kern/kern_lock.c",
+    "//:sys/kern/kern_lockf.c",
+    "//:sys/kern/kern_lockstat.c",
+    "//:sys/kern/kern_loginclass.c",
+    "//:sys/kern/kern_malloc.c",
+    "//:sys/kern/kern_mbuf.c",
+    "//:sys/kern/kern_membarrier.c",
+    "//:sys/kern/kern_mib.c",
+    "//:sys/kern/kern_module.c",
+    "//:sys/kern/kern_mtxpool.c",
+    "//:sys/kern/kern_mutex.c",
+    "//:sys/kern/kern_ntptime.c",
+    "//:sys/kern/kern_osd.c",
+    "//:sys/kern/kern_physio.c",
+    "//:sys/kern/kern_pmc.c",
+    "//:sys/kern/kern_priv.c",
+    "//:sys/kern/kern_proc.c",
+    "//:sys/kern/kern_procctl.c",
+    "//:sys/kern/kern_prot.c",
+    "//:sys/kern/kern_racct.c",
+    "//:sys/kern/kern_rangelock.c",
+    "//:sys/kern/kern_rctl.c",
+    "//:sys/kern/kern_resource.c",
+    "//:sys/kern/kern_rmlock.c",
+    "//:sys/kern/kern_rwlock.c",
+    "//:sys/kern/kern_sdt.c",
+    "//:sys/kern/kern_sema.c",
+    "//:sys/kern/kern_sendfile.c",
+    "//:sys/kern/kern_sharedpage.c",
+    "//:sys/kern/kern_shutdown.c",
+    "//:sys/kern/kern_sig.c",
+    "//:sys/kern/kern_switch.c",
+    "//:sys/kern/kern_sx.c",
+    "//:sys/kern/kern_synch.c",
+    "//:sys/kern/kern_syscalls.c",
+    "//:sys/kern/kern_sysctl.c",
+    "//:sys/kern/kern_tc.c",
+    "//:sys/kern/kern_thr.c",
+    "//:sys/kern/kern_thread.c",
+    "//:sys/kern/kern_time.c",
+    "//:sys/kern/kern_timeout.c",
+    "//:sys/kern/kern_ucoredump.c",
+    "//:sys/kern/kern_umtx.c",
+    "//:sys/kern/kern_uuid.c",
+    "//:sys/kern/kern_vnodedumper.c",
+    "//:sys/kern/kern_xxx.c",
+    "//:sys/kern/ksched.c",
+    "//:sys/kern/link_elf.c",
+    "//:sys/kern/link_elf_obj.c",
+    "//:sys/kern/p1003_1b.c",
+    "//:sys/kern/posix4_mib.c",
+    "//:sys/kern/sched_shim.c",
+    "//:sys/kern/sched_ule.c",
+    "//:sys/kern/subr_acl_nfs4.c",
+    "//:sys/kern/subr_acl_posix1e.c",
+    "//:sys/kern/subr_autoconf.c",
+    "//:sys/kern/subr_blist.c",
+    "//:sys/kern/subr_boot.c",
+    "//:sys/kern/subr_bufring.c",
+    "//:sys/kern/subr_bus.c",
+    "//:sys/kern/subr_bus_dma.c",
+    "//:sys/kern/subr_capability.c",
+    "//:sys/kern/subr_clock.c",
+    "//:sys/kern/subr_counter.c",
+    "//:sys/kern/subr_devstat.c",
+    "//:sys/kern/subr_disk.c",
+    "//:sys/kern/subr_early.c",
+    "//:sys/kern/subr_epoch.c",
+    "//:sys/kern/subr_eventhandler.c",
+    "//:sys/kern/subr_fattime.c",
+    "//:sys/kern/subr_filter.c",
+    "//:sys/kern/subr_firmware.c",
+    "//:sys/kern/subr_gtaskqueue.c",
+    "//:sys/kern/subr_hash.c",
+    "//:sys/kern/subr_hints.c",
+    "//:sys/kern/subr_kdb.c",
+    "//:sys/kern/subr_kobj.c",
+    "//:sys/kern/subr_lock.c",
+    "//:sys/kern/subr_log.c",
+    "//:sys/kern/subr_memdesc.c",
+    "//:sys/kern/subr_module.c",
+    "//:sys/kern/subr_msgbuf.c",
+    "//:sys/kern/subr_param.c",
+    "//:sys/kern/subr_pcpu.c",
+    "//:sys/kern/subr_pctrie.c",
+    "//:sys/kern/subr_pidctrl.c",
+    "//:sys/kern/subr_power.c",
+    "//:sys/kern/subr_prf.c",
+    "//:sys/kern/subr_prng.c",
+    "//:sys/kern/subr_prof.c",
+    "//:sys/kern/subr_rangeset.c",
+    "//:sys/kern/subr_rman.c",
+    "//:sys/kern/subr_rtc.c",
+    "//:sys/kern/subr_sbuf.c",
+    "//:sys/kern/subr_scanf.c",
+    "//:sys/kern/subr_sglist.c",
+    "//:sys/kern/subr_sleepqueue.c",
+    "//:sys/kern/subr_smp.c",
+    "//:sys/kern/subr_smr.c",
+    "//:sys/kern/subr_stack.c",
+    "//:sys/kern/subr_taskqueue.c",
+    "//:sys/kern/subr_trap.c",
+    "//:sys/kern/subr_turnstile.c",
+    "//:sys/kern/subr_uio.c",
+    "//:sys/kern/subr_unit.c",
+    "//:sys/kern/subr_vmem.c",
+    "//:sys/kern/subr_witness.c",
+    "//:sys/kern/sys_capability.c",
+    "//:sys/kern/sys_eventfd.c",
+    "//:sys/kern/sys_generic.c",
+    "//:sys/kern/sys_getrandom.c",
+    "//:sys/kern/sys_pipe.c",
+    "//:sys/kern/sys_procdesc.c",
+    "//:sys/kern/sys_process.c",
+    "//:sys/kern/sys_socket.c",
+    "//:sys/kern/sys_timerfd.c",
+    "//:sys/kern/syscalls.c",
+    "//:sys/kern/sysv_ipc.c",
+    "//:sys/kern/sysv_msg.c",
+    "//:sys/kern/sysv_sem.c",
+    "//:sys/kern/sysv_shm.c",
+    "//:sys/kern/tty.c",
+    "//:sys/kern/tty_info.c",
+    "//:sys/kern/tty_inq.c",
+    "//:sys/kern/tty_outq.c",
+    "//:sys/kern/tty_pts.c",
+    "//:sys/kern/tty_tty.c",
+    "//:sys/kern/tty_ttydisc.c",
+    "//:sys/kern/uipc_accf.c",
+    "//:sys/kern/uipc_debug.c",
+    "//:sys/kern/uipc_domain.c",
+    "//:sys/kern/uipc_ktls.c",
+    "//:sys/kern/uipc_mbuf.c",
+    "//:sys/kern/uipc_mbuf2.c",
+    "//:sys/kern/uipc_mbufhash.c",
+    "//:sys/kern/uipc_shm.c",
+    "//:sys/kern/uipc_sockbuf.c",
+    "//:sys/kern/uipc_socket.c",
+    "//:sys/kern/uipc_syscalls.c",
+    "//:sys/kern/uipc_usrreq.c",
+    "//:sys/kern/vfs_acl.c",
+    "//:sys/kern/vfs_aio.c",
+    "//:sys/kern/vfs_bio.c",
+    "//:sys/kern/vfs_cache.c",
+    "//:sys/kern/vfs_cluster.c",
+    "//:sys/kern/vfs_default.c",
+    "//:sys/kern/vfs_export.c",
+    "//:sys/kern/vfs_extattr.c",
+    "//:sys/kern/vfs_hash.c",
+    "//:sys/kern/vfs_init.c",
+    "//:sys/kern/vfs_inotify.c",
+    "//:sys/kern/vfs_lookup.c",
+    "//:sys/kern/vfs_mount.c",
+    "//:sys/kern/vfs_mountroot.c",
+    "//:sys/kern/vfs_subr.c",
+    "//:sys/kern/vfs_syscalls.c",
+    "//:sys/kern/vfs_vnops.c",
+    "//:sys/libkern/arc4random.c",
+    "//:sys/libkern/arc4random_uniform.c",
+    "//:sys/libkern/asprintf.c",
+    "//:sys/libkern/bcd.c",
+    "//:sys/libkern/bsearch.c",
+    "//:sys/libkern/crc16.c",
+    "//:sys/libkern/explicit_bzero.c",
+    "//:sys/libkern/fnmatch.c",
+    "//:sys/libkern/gsb_crc32.c",
+    "//:sys/libkern/inet_aton.c",
+    "//:sys/libkern/inet_ntoa.c",
+    "//:sys/libkern/inet_ntop.c",
+    "//:sys/libkern/inet_pton.c",
+    "//:sys/libkern/jenkins_hash.c",
+    "//:sys/libkern/memcchr.c",
+    "//:sys/libkern/memchr.c",
+    "//:sys/libkern/memmem.c",
+    "//:sys/libkern/murmur3_32.c",
+    "//:sys/libkern/qsort.c",
+    "//:sys/libkern/qsort_r.c",
+    "//:sys/libkern/random.c",
+    "//:sys/libkern/scanc.c",
+    "//:sys/libkern/strcasecmp.c",
+    "//:sys/libkern/strcasestr.c",
+    "//:sys/libkern/strcat.c",
+    "//:sys/libkern/strchr.c",
+    "//:sys/libkern/strchrnul.c",
+    "//:sys/libkern/strcmp.c",
+    "//:sys/libkern/strcpy.c",
+    "//:sys/libkern/strcspn.c",
+    "//:sys/libkern/strdup.c",
+    "//:sys/libkern/strlcat.c",
+    "//:sys/libkern/strlcpy.c",
+    "//:sys/libkern/strncat.c",
+    "//:sys/libkern/strncmp.c",
+    "//:sys/libkern/strncpy.c",
+    "//:sys/libkern/strndup.c",
+    "//:sys/libkern/strnlen.c",
+    "//:sys/libkern/strnstr.c",
+    "//:sys/libkern/strrchr.c",
+    "//:sys/libkern/strsep.c",
+    "//:sys/libkern/strspn.c",
+    "//:sys/libkern/strstr.c",
+    "//:sys/libkern/strtol.c",
+    "//:sys/libkern/strtoq.c",
+    "//:sys/libkern/strtoul.c",
+    "//:sys/libkern/strtouq.c",
+    "//:sys/libkern/strvalid.c",
+    "//:sys/libkern/timingsafe_bcmp.c",
+    "//:sys/libkern/x86/crc32_sse42.c",
+    "//:sys/net/bpf.c",
+    "//:sys/net/bpf_buffer.c",
+    "//:sys/net/bpf_filter.c",
+    "//:sys/net/bpf_zerocopy.c",
+    "//:sys/net/debugnet.c",
+    "//:sys/net/debugnet_inet.c",
+    "//:sys/net/if.c",
+    "//:sys/net/if_clone.c",
+    "//:sys/net/if_dead.c",
+    "//:sys/net/if_ethersubr.c",
+    "//:sys/net/if_gif.c",
+    "//:sys/net/if_llatbl.c",
+    "//:sys/net/if_loop.c",
+    "//:sys/net/if_media.c",
+    "//:sys/net/if_mib.c",
+    "//:sys/net/if_tuntap.c",
+    "//:sys/net/if_vlan.c",
+    "//:sys/net/ifq.c",
+    "//:sys/net/netisr.c",
+    "//:sys/net/pfil.c",
+    "//:sys/net/radix.c",
+    "//:sys/net/route.c",
+    "//:sys/net/route/fib_algo.c",
+    "//:sys/net/route/nhgrp.c",
+    "//:sys/net/route/nhgrp_ctl.c",
+    "//:sys/net/route/nhop.c",
+    "//:sys/net/route/nhop_ctl.c",
+    "//:sys/net/route/nhop_utils.c",
+    "//:sys/net/route/route_ctl.c",
+    "//:sys/net/route/route_ddb.c",
+    "//:sys/net/route/route_helpers.c",
+    "//:sys/net/route/route_ifaddrs.c",
+    "//:sys/net/route/route_rtentry.c",
+    "//:sys/net/route/route_subscription.c",
+    "//:sys/net/route/route_tables.c",
+    "//:sys/net/route/route_temporal.c",
+    "//:sys/net/rtsock.c",
+    "//:sys/net/toeplitz.c",
+    "//:sys/net/vnet.c",
+    "//:sys/netinet/cc/cc.c",
+    "//:sys/netinet/cc/cc_cubic.c",
+    "//:sys/netinet/if_ether.c",
+    "//:sys/netinet/igmp.c",
+    "//:sys/netinet/in.c",
+    "//:sys/netinet/in_cksum.c",
+    "//:sys/netinet/in_debug.c",
+    "//:sys/netinet/in_fib.c",
+    "//:sys/netinet/in_fib_algo.c",
+    "//:sys/netinet/in_gif.c",
+    "//:sys/netinet/in_jail.c",
+    "//:sys/netinet/in_kdtrace.c",
+    "//:sys/netinet/in_mcast.c",
+    "//:sys/netinet/in_pcb.c",
+    "//:sys/netinet/in_prot.c",
+    "//:sys/netinet/in_proto.c",
+    "//:sys/netinet/in_rmx.c",
+    "//:sys/netinet/ip_ecn.c",
+    "//:sys/netinet/ip_encap.c",
+    "//:sys/netinet/ip_fastfwd.c",
+    "//:sys/netinet/ip_icmp.c",
+    "//:sys/netinet/ip_id.c",
+    "//:sys/netinet/ip_input.c",
+    "//:sys/netinet/ip_options.c",
+    "//:sys/netinet/ip_output.c",
+    "//:sys/netinet/ip_reass.c",
+    "//:sys/netinet/netdump/netdump_client.c",
+    "//:sys/netinet/raw_ip.c",
+    "//:sys/netinet/sctp_crc32.c",
+    "//:sys/netinet/tcp_ecn.c",
+    "//:sys/netinet/tcp_fastopen.c",
+    "//:sys/netinet/tcp_hostcache.c",
+    "//:sys/netinet/tcp_input.c",
+    "//:sys/netinet/tcp_log_buf.c",
+    "//:sys/netinet/tcp_lro.c",
+    "//:sys/netinet/tcp_offload.c",
+    "//:sys/netinet/tcp_output.c",
+    "//:sys/netinet/tcp_reass.c",
+    "//:sys/netinet/tcp_sack.c",
+    "//:sys/netinet/tcp_subr.c",
+    "//:sys/netinet/tcp_syncache.c",
+    "//:sys/netinet/tcp_timer.c",
+    "//:sys/netinet/tcp_timewait.c",
+    "//:sys/netinet/tcp_usrreq.c",
+    "//:sys/netinet/udp_usrreq.c",
+    "//:sys/netinet6/dest6.c",
+    "//:sys/netinet6/frag6.c",
+    "//:sys/netinet6/icmp6.c",
+    "//:sys/netinet6/in6.c",
+    "//:sys/netinet6/in6_cksum.c",
+    "//:sys/netinet6/in6_fib.c",
+    "//:sys/netinet6/in6_fib_algo.c",
+    "//:sys/netinet6/in6_gif.c",
+    "//:sys/netinet6/in6_ifattach.c",
+    "//:sys/netinet6/in6_jail.c",
+    "//:sys/netinet6/in6_mcast.c",
+    "//:sys/netinet6/in6_pcb.c",
+    "//:sys/netinet6/in6_proto.c",
+    "//:sys/netinet6/in6_rmx.c",
+    "//:sys/netinet6/in6_src.c",
+    "//:sys/netinet6/ip6_fastfwd.c",
+    "//:sys/netinet6/ip6_forward.c",
+    "//:sys/netinet6/ip6_id.c",
+    "//:sys/netinet6/ip6_input.c",
+    "//:sys/netinet6/ip6_output.c",
+    "//:sys/netinet6/mld6.c",
+    "//:sys/netinet6/nd6.c",
+    "//:sys/netinet6/nd6_nbr.c",
+    "//:sys/netinet6/nd6_rtr.c",
+    "//:sys/netinet6/raw_ip6.c",
+    "//:sys/netinet6/route6.c",
+    "//:sys/netinet6/scope6.c",
+    "//:sys/netinet6/udp6_usrreq.c",
+    "//:sys/netipsec/ipsec_pcb.c",
+    "//:sys/netipsec/key.c",
+    "//:sys/netipsec/key_debug.c",
+    "//:sys/netipsec/keysock.c",
+    "//:sys/netipsec/subr_ipsec.c",
+    "//:sys/netlink/netlink_domain.c",
+    "//:sys/netlink/netlink_generic.c",
+    "//:sys/netlink/netlink_glue.c",
+    "//:sys/netlink/netlink_io.c",
+    "//:sys/netlink/netlink_message_parser.c",
+    "//:sys/netlink/netlink_message_writer.c",
+    "//:sys/netlink/netlink_module.c",
+    "//:sys/netlink/netlink_route.c",
+    "//:sys/netlink/route/iface.c",
+    "//:sys/netlink/route/iface_drivers.c",
+    "//:sys/netlink/route/neigh.c",
+    "//:sys/netlink/route/nexthop.c",
+    "//:sys/netlink/route/rt.c",
+    "//:sys/nfs/nfs_diskless.c",
+    "//:sys/nfs/nfs_nfssvc.c",
+    "//:sys/nlm/nlm_advlock.c",
+    "//:sys/nlm/nlm_prot_clnt.c",
+    "//:sys/nlm/nlm_prot_impl.c",
+    "//:sys/nlm/nlm_prot_server.c",
+    "//:sys/nlm/nlm_prot_svc.c",
+    "//:sys/nlm/nlm_prot_xdr.c",
+    "//:sys/nlm/sm_inter_xdr.c",
+    "//:sys/opencrypto/cbc_mac.c",
+    "//:sys/opencrypto/criov.c",
+    "//:sys/opencrypto/crypto.c",
+    "//:sys/opencrypto/cryptodeflate.c",
+    "//:sys/opencrypto/cryptosoft.c",
+    "//:sys/opencrypto/gfmult.c",
+    "//:sys/opencrypto/gmac.c",
+    "//:sys/opencrypto/ktls_ocf.c",
+    "//:sys/opencrypto/rmd160.c",
+    "//:sys/opencrypto/xform_aes_cbc.c",
+    "//:sys/opencrypto/xform_aes_icm.c",
+    "//:sys/opencrypto/xform_aes_xts.c",
+    "//:sys/opencrypto/xform_cbc_mac.c",
+    "//:sys/opencrypto/xform_cml.c",
+    "//:sys/opencrypto/xform_deflate.c",
+    "//:sys/opencrypto/xform_gmac.c",
+    "//:sys/opencrypto/xform_null.c",
+    "//:sys/opencrypto/xform_rmd160.c",
+    "//:sys/opencrypto/xform_sha1.c",
+    "//:sys/opencrypto/xform_sha2.c",
+    "//:sys/rpc/auth_none.c",
+    "//:sys/rpc/auth_unix.c",
+    "//:sys/rpc/authunix_prot.c",
+    "//:sys/rpc/clnt_bck.c",
+    "//:sys/rpc/clnt_dg.c",
+    "//:sys/rpc/clnt_nl.c",
+    "//:sys/rpc/clnt_rc.c",
+    "//:sys/rpc/clnt_vc.c",
+    "//:sys/rpc/getnetconfig.c",
+    "//:sys/rpc/replay.c",
+    "//:sys/rpc/rpc_callmsg.c",
+    "//:sys/rpc/rpc_generic.c",
+    "//:sys/rpc/rpc_prot.c",
+    "//:sys/rpc/rpcb_clnt.c",
+    "//:sys/rpc/rpcb_prot.c",
+    "//:sys/rpc/rpcsec_tls/auth_tls.c",
+    "//:sys/rpc/rpcsec_tls/rpctls_impl.c",
+    "//:sys/rpc/svc.c",
+    "//:sys/rpc/svc_auth.c",
+    "//:sys/rpc/svc_auth_unix.c",
+    "//:sys/rpc/svc_dg.c",
+    "//:sys/rpc/svc_generic.c",
+    "//:sys/rpc/svc_vc.c",
+    "//:sys/security/audit/audit.c",
+    "//:sys/security/audit/audit_arg.c",
+    "//:sys/security/audit/audit_bsm.c",
+    "//:sys/security/audit/audit_bsm_db.c",
+    "//:sys/security/audit/audit_bsm_klib.c",
+    "//:sys/security/audit/audit_pipe.c",
+    "//:sys/security/audit/audit_syscalls.c",
+    "//:sys/security/audit/audit_trigger.c",
+    "//:sys/security/audit/audit_worker.c",
+    "//:sys/security/audit/bsm_domain.c",
+    "//:sys/security/audit/bsm_errno.c",
+    "//:sys/security/audit/bsm_fcntl.c",
+    "//:sys/security/audit/bsm_socket_type.c",
+    "//:sys/security/audit/bsm_token.c",
+    "//:sys/security/mac/mac_audit.c",
+    "//:sys/security/mac/mac_cred.c",
+    "//:sys/security/mac/mac_framework.c",
+    "//:sys/security/mac/mac_inet.c",
+    "//:sys/security/mac/mac_inet6.c",
+    "//:sys/security/mac/mac_kdb.c",
+    "//:sys/security/mac/mac_label.c",
+    "//:sys/security/mac/mac_net.c",
+    "//:sys/security/mac/mac_pipe.c",
+    "//:sys/security/mac/mac_posix_sem.c",
+    "//:sys/security/mac/mac_posix_shm.c",
+    "//:sys/security/mac/mac_priv.c",
+    "//:sys/security/mac/mac_process.c",
+    "//:sys/security/mac/mac_socket.c",
+    "//:sys/security/mac/mac_syscalls.c",
+    "//:sys/security/mac/mac_system.c",
+    "//:sys/security/mac/mac_sysv_msg.c",
+    "//:sys/security/mac/mac_sysv_sem.c",
+    "//:sys/security/mac/mac_sysv_shm.c",
+    "//:sys/security/mac/mac_vfs.c",
+    "//:sys/ufs/ffs/ffs_alloc.c",
+    "//:sys/ufs/ffs/ffs_balloc.c",
+    "//:sys/ufs/ffs/ffs_inode.c",
+    "//:sys/ufs/ffs/ffs_snapshot.c",
+    "//:sys/ufs/ffs/ffs_softdep.c",
+    "//:sys/ufs/ffs/ffs_subr.c",
+    "//:sys/ufs/ffs/ffs_suspend.c",
+    "//:sys/ufs/ffs/ffs_tables.c",
+    "//:sys/ufs/ffs/ffs_vfsops.c",
+    "//:sys/ufs/ffs/ffs_vnops.c",
+    "//:sys/ufs/ufs/ufs_acl.c",
+    "//:sys/ufs/ufs/ufs_bmap.c",
+    "//:sys/ufs/ufs/ufs_dirhash.c",
+    "//:sys/ufs/ufs/ufs_extattr.c",
+    "//:sys/ufs/ufs/ufs_gjournal.c",
+    "//:sys/ufs/ufs/ufs_inode.c",
+    "//:sys/ufs/ufs/ufs_lookup.c",
+    "//:sys/ufs/ufs/ufs_quota.c",
+    "//:sys/ufs/ufs/ufs_vfsops.c",
+    "//:sys/ufs/ufs/ufs_vnops.c",
+    "//:sys/vm/device_pager.c",
+    "//:sys/vm/phys_pager.c",
+    "//:sys/vm/sg_pager.c",
+    "//:sys/vm/swap_pager.c",
+    "//:sys/vm/uma_core.c",
+    "//:sys/vm/uma_dbg.c",
+    "//:sys/vm/vm_domainset.c",
+    "//:sys/vm/vm_fault.c",
+    "//:sys/vm/vm_glue.c",
+    "//:sys/vm/vm_init.c",
+    "//:sys/vm/vm_kern.c",
+    "//:sys/vm/vm_map.c",
+    "//:sys/vm/vm_meter.c",
+    "//:sys/vm/vm_mmap.c",
+    "//:sys/vm/vm_object.c",
+    "//:sys/vm/vm_page.c",
+    "//:sys/vm/vm_pageout.c",
+    "//:sys/vm/vm_pager.c",
+    "//:sys/vm/vm_phys.c",
+    "//:sys/vm/vm_radix.c",
+    "//:sys/vm/vm_reserv.c",
+    "//:sys/vm/vm_swapout.c",
+    "//:sys/vm/vm_unix.c",
+    "//:sys/vm/vnode_pager.c",
+    "//:sys/x86/acpica/OsdEnvironment.c",
+    "//:sys/x86/acpica/acpi_apm.c",
+    "//:sys/x86/acpica/madt.c",
+    "//:sys/x86/acpica/srat.c",
+    "//:sys/x86/isa/atrtc.c",
+    "//:sys/x86/isa/clock.c",
+    "//:sys/x86/isa/elcr.c",
+    "//:sys/x86/isa/isa.c",
+    "//:sys/x86/isa/isa_dma.c",
+    "//:sys/x86/isa/nmi.c",
+    "//:sys/x86/isa/orm.c",
+    "//:sys/x86/pci/pci_bus.c",
+    "//:sys/x86/pci/pci_early_quirks.c",
+    "//:sys/x86/pci/qpi.c",
+    "//:sys/x86/x86/autoconf.c",
+    "//:sys/x86/x86/bus_machdep.c",
+    "//:sys/x86/x86/busdma_bounce.c",
+    "//:sys/x86/x86/busdma_machdep.c",
+    "//:sys/x86/x86/cpu_machdep.c",
+    "//:sys/x86/x86/dbreg.c",
+    "//:sys/x86/x86/delay.c",
+    "//:sys/x86/x86/dump_machdep.c",
+    "//:sys/x86/x86/identcpu.c",
+    "//:sys/x86/x86/intr_machdep.c",
+    "//:sys/x86/x86/io_apic.c",
+    "//:sys/x86/x86/legacy.c",
+    "//:sys/x86/x86/local_apic.c",
+    "//:sys/x86/x86/mca.c",
+    "//:sys/x86/x86/mp_x86.c",
+    "//:sys/x86/x86/mptable.c",
+    "//:sys/x86/x86/mptable_pci.c",
+    "//:sys/x86/x86/msi.c",
+    "//:sys/x86/x86/nexus.c",
+    "//:sys/x86/x86/pvclock.c",
+    "//:sys/x86/x86/sdt_machdep.c",
+    "//:sys/x86/x86/stack_machdep.c",
+    "//:sys/x86/x86/tsc.c",
+    "//:sys/x86/x86/ucode.c",
+    "//:sys/x86/x86/ucode_subr.c",
+    "//:sys/x86/x86/x86_mem.c",
+    "//:sys/x86/xen/hvm.c",
+    "//:sys/x86/xen/pv.c",
+    "//:sys/x86/xen/xen_apic.c",
+    "//:sys/x86/xen/xen_arch_intr.c",
+    "//:sys/xdr/xdr.c",
+    "//:sys/xdr/xdr_array.c",
+    "//:sys/xdr/xdr_mbuf.c",
+    "//:sys/xdr/xdr_mem.c",
+    "//:sys/xdr/xdr_reference.c",
+    "//:sys/xdr/xdr_sizeof.c",
+    "//:sys/xen/features.c",
+    "//:sys/xen/xen_common.c",
+    "//:sys/xen/xenbus/xenbus.c",
+    "//:sys/xen/xenbus/xenbusb.c",
+    "//:sys/xen/xenbus/xenbusb_back.c",
+    "//:sys/xen/xenbus/xenbusb_front.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        ":vdso",
+        ":vdso_ia32",
+        ":acpi_wakecode",
+
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    additional_compiler_inputs = [
+        "//:sys/kern/imgact_elf.c",
+        "//:sys/kern/kern_ctf.c",
+        "//:sys/libkern/qsort.c",
+        "//:sys/kern/subr_busdma_bounce.c",
+        "//:sys/kern/subr_syscall.c",
+        "//:sys/dev/xen/netback/netback_unit_tests.c",
+        "//:sys/crypto/chacha20/chacha.c",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_004",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror",
+        "-Isys/contrib/ck/include"
+    ],
+    srcs = [
+    "//:sys/contrib/ck/src/ck_array.c",
+    "//:sys/contrib/ck/src/ck_barrier_centralized.c",
+    "//:sys/contrib/ck/src/ck_barrier_combining.c",
+    "//:sys/contrib/ck/src/ck_barrier_dissemination.c",
+    "//:sys/contrib/ck/src/ck_barrier_mcs.c",
+    "//:sys/contrib/ck/src/ck_barrier_tournament.c",
+    "//:sys/contrib/ck/src/ck_epoch.c",
+    "//:sys/contrib/ck/src/ck_hp.c",
+    "//:sys/contrib/ck/src/ck_hs.c",
+    "//:sys/contrib/ck/src/ck_ht.c",
+    "//:sys/contrib/ck/src/ck_rhs.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_005",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror",
+        "-Wno-unused-but-set-variable"
+    ],
+    srcs = [
+    "//:sys/contrib/dev/acpica/components/namespace/nsaccess.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_006",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror",
+        "-DXZ_USE_CRC64",
+        "-Isys/contrib/xz-embedded/freebsd/",
+        "-Isys/contrib/xz-embedded/linux/lib/xz/",
+        "-Isys/contrib/xz-embedded/linux/include/linux/"
+    ],
+    srcs = [
+    "//:sys/contrib/xz-embedded/linux/lib/xz/xz_crc32.c",
+    "//:sys/contrib/xz-embedded/linux/lib/xz/xz_crc64.c",
+    "//:sys/contrib/xz-embedded/linux/lib/xz/xz_dec_bcj.c",
+    "//:sys/contrib/xz-embedded/linux/lib/xz/xz_dec_lzma2.c",
+    "//:sys/contrib/xz-embedded/linux/lib/xz/xz_dec_stream.c",
+    "//:sys/dev/xz/xz_mod.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_007",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-DZSTD_HEAPMODE=1",
+        "-Isys/contrib/zstd/lib/freebsd",
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Isys/contrib/zstd/lib",
+        "-Isys/contrib/zstd/lib/common",
+        "-Werror",
+        "-Wno-missing-prototypes",
+        "-U__BMI__",
+        "-DZSTD_NO_INTRINSICS"
+    ],
+    srcs = [
+    "//:sys/contrib/zstd/lib/common/entropy_common.c",
+    "//:sys/contrib/zstd/lib/common/error_private.c",
+    "//:sys/contrib/zstd/lib/common/fse_decompress.c",
+    "//:sys/contrib/zstd/lib/common/xxhash.c",
+    "//:sys/contrib/zstd/lib/common/zstd_common.c",
+    "//:sys/contrib/zstd/lib/compress/fse_compress.c",
+    "//:sys/contrib/zstd/lib/compress/hist.c",
+    "//:sys/contrib/zstd/lib/compress/huf_compress.c",
+    "//:sys/contrib/zstd/lib/compress/zstd_compress.c",
+    "//:sys/contrib/zstd/lib/compress/zstd_compress_literals.c",
+    "//:sys/contrib/zstd/lib/compress/zstd_compress_sequences.c",
+    "//:sys/contrib/zstd/lib/compress/zstd_double_fast.c",
+    "//:sys/contrib/zstd/lib/compress/zstd_fast.c",
+    "//:sys/contrib/zstd/lib/compress/zstd_lazy.c",
+    "//:sys/contrib/zstd/lib/compress/zstd_ldm.c",
+    "//:sys/contrib/zstd/lib/compress/zstd_opt.c",
+    "//:sys/contrib/zstd/lib/compress/zstd_preSplit.c",
+    "//:sys/contrib/zstd/lib/decompress/zstd_ddict.c",
+    "//:sys/contrib/zstd/lib/decompress/zstd_decompress.c",
+    "//:sys/contrib/zstd/lib/decompress/zstd_decompress_block.c",
+    "//:sys/contrib/zstd/lib/freebsd/zstd_kmalloc.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    additional_compiler_inputs = [
+        "//:sys/contrib/zstd/lib/common/debug.c",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_008",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-DZSTD_HEAPMODE=1",
+        "-Isys/contrib/zstd/lib/freebsd",
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Isys/contrib/zstd/lib",
+        "-Isys/contrib/zstd/lib/common",
+        "-Werror",
+        "-Wno-missing-prototypes",
+        "-U__BMI__",
+        "-DZSTD_NO_INTRINSICS",
+        "-Wno-unused-but-set-variable"
+    ],
+    srcs = [
+    "//:sys/contrib/zstd/lib/compress/zstd_compress_superblock.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_009",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-DZSTD_HEAPMODE=1",
+        "-Isys/contrib/zstd/lib/freebsd",
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Isys/contrib/zstd/lib",
+        "-Isys/contrib/zstd/lib/common",
+        "-Werror",
+        "-Wno-missing-prototypes",
+        "-U__BMI__",
+        "-DZSTD_NO_INTRINSICS",
+        "-Wno-bitwise-instead-of-logical"
+    ],
+    srcs = [
+    "//:sys/contrib/zstd/lib/decompress/huf_decompress.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_010",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror",
+        "-Isys/crypto/blake2",
+        "-Wno-cast-qual",
+        "-DSUFFIX=_ref",
+        "-Wno-unused-function"
+    ],
+    srcs = [
+    "//:sys/contrib/libb2/blake2b-ref.c",
+    "//:sys/contrib/libb2/blake2s-ref.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_011",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror",
+        "-Isys/crypto/blake2",
+        "-Wno-cast-qual"
+    ],
+    srcs = [
+    "//:sys/crypto/blake2/blake2-sw.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_012",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror",
+        "-Isys/contrib/libsodium/src/libsodium/include",
+        "-Isys/crypto/libsodium"
+    ],
+    srcs = [
+    "//:sys/crypto/curve25519.c",
+    "//:sys/crypto/libsodium/randombytes.c",
+    "//:sys/crypto/libsodium/utils.c",
+    "//:sys/opencrypto/xform_chacha20_poly1305.c",
+    "//:sys/opencrypto/xform_poly1305.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_013",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":card_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_014",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":power_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_015",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":fb_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_016",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":mmcbr_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_017",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":mmcbus_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_018",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":pci_iov_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_019",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":pci_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_020",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":pcib_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_021",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":uart_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_022",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":virtio_bus_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_023",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":virtio_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_024",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":virtio_pci_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_025",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":g_part_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_026",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":g_raid_md_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_027",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":g_raid_tr_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_028",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":isa_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_029",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":bus_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_030",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":clock_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_031",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":cpufreq_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_032",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":device_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_033",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":linker_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_034",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    "//:sys/kern/stack_protector.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_035",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":serdev_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_036",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror",
+        "-Isys/contrib/zstd/lib/freebsd"
+    ],
+    srcs = [
+    "//:sys/kern/subr_compressor.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_037",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror",
+        "-Wno-cast-qual",
+        "-Wno-deprecated-non-prototype",
+        "-Wno-strict-prototypes"
+    ],
+    srcs = [
+    "//:sys/contrib/zlib/adler32.c",
+    "//:sys/contrib/zlib/compress.c",
+    "//:sys/contrib/zlib/crc32.c",
+    "//:sys/contrib/zlib/deflate.c",
+    "//:sys/contrib/zlib/inffast.c",
+    "//:sys/contrib/zlib/inflate.c",
+    "//:sys/contrib/zlib/inftrees.c",
+    "//:sys/contrib/zlib/trees.c",
+    "//:sys/contrib/zlib/uncompr.c",
+    "//:sys/contrib/zlib/zutil.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_038",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":cryptodev_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_039",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror",
+        "-Isys/contrib/libsodium/src/libsodium/include/sodium",
+        "-Isys/crypto/libsodium",
+        "-Wno-unused-function"
+    ],
+    srcs = [
+    "//:sys/contrib/libsodium/src/libsodium/crypto_core/ed25519/ref10/ed25519_ref10.c",
+    "//:sys/contrib/libsodium/src/libsodium/crypto_scalarmult/curve25519/ref10/x25519_ref10.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_040",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror",
+        "-Isys/contrib/libsodium/src/libsodium/include/sodium",
+        "-Isys/crypto/libsodium"
+    ],
+    srcs = [
+    "//:sys/contrib/libsodium/src/libsodium/crypto_core/hchacha20/core_hchacha20.c",
+    "//:sys/contrib/libsodium/src/libsodium/crypto_onetimeauth/poly1305/donna/poly1305_donna.c",
+    "//:sys/contrib/libsodium/src/libsodium/crypto_onetimeauth/poly1305/onetimeauth_poly1305.c",
+    "//:sys/contrib/libsodium/src/libsodium/crypto_scalarmult/curve25519/scalarmult_curve25519.c",
+    "//:sys/contrib/libsodium/src/libsodium/crypto_stream/chacha20/ref/chacha20_ref.c",
+    "//:sys/contrib/libsodium/src/libsodium/crypto_stream/chacha20/stream_chacha20.c",
+    "//:sys/contrib/libsodium/src/libsodium/crypto_verify/sodium/verify.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_041",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h"
+    ],
+    srcs = [
+    ":rpctlscd_gen",
+    ":rpctlssd_gen",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_045",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":xenbus_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_046",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":xenbusb_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_047",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":xenmem_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_048",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":acpi_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_049",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":acpi_wmi_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_050",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-x",
+        "assembler-with-cpp",
+        "-DLOCORE",
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror",
+        "-g0"
+    ],
+    srcs = [
+    "//:sys/amd64/amd64/xen-locore.S",
+    ],
+    hdrs = [
+        ":assym_inc",
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_051",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":config",
+    ":vnode_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+# vers.o last in the link line, after force-dynamic-hack.pico -- the
+# reference's link order tail.
+cc_per_source_library(
+    name = "cc_053",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":newvers",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_055",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-O3",
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror",
+        "-Wno-error=cast-qual",
+        "-mmmx",
+        "-msse",
+        "-msse4",
+        "-maes",
+        "-mpclmul",
+        "-isystem",
+        "external/+kernel_llvm_toolchain+kernel_llvm/resource_include",
+    ],
+    srcs = [
+    "//:sys/crypto/aesni/aesni_ccm.c",
+    "//:sys/crypto/aesni/aesni_ghash.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+        "@kernel_llvm//:clang_builtins",
+    ],
+)
+cc_per_source_library(
+    name = "cc_056",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-O3",
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror",
+        "-Wno-error=cast-qual",
+        "-mmmx",
+        "-msse",
+        "-msse4",
+        "-maes",
+        "-isystem",
+        "external/+kernel_llvm_toolchain+kernel_llvm/resource_include",
+    ],
+    srcs = [
+    "//:sys/crypto/aesni/aesni_wrap.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+        "@kernel_llvm//:clang_builtins",
+    ],
+)
+cc_per_source_library(
+    name = "cc_057",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-O3",
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror",
+        "-mmmx",
+        "-msse",
+        "-msse4",
+        "-msha",
+        "-isystem",
+        "external/+kernel_llvm_toolchain+kernel_llvm/resource_include",
+    ],
+    srcs = [
+    "//:sys/crypto/aesni/intel_sha1.c",
+    "//:sys/crypto/aesni/intel_sha256.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+        "@kernel_llvm//:clang_builtins",
+    ],
+)
+cc_per_source_library(
+    name = "cc_058",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-O3",
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror",
+        "-mmmx",
+        "-msse",
+        "-msse2"
+    ],
+    srcs = [
+    "//:sys/kern/subr_clockcalib.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_060",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":force-dynamic-hack.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+
+freebsd_kernel_link(
+    name = "kernel",
+    out = "kernel.full",
+    debug_out = "kernel.debug",
+    stripped_out = "kernel",
+    args = [
+        "-m",
+        "elf_x86_64_fbsd",
+        "-Bdynamic",
+        "-L",
+        "sys/conf",
+        "-T",
+        "$(location //:sys/conf/ldscript.amd64)",
+        "--build-id=sha1",
+        "-z",
+        "max-page-size=2097152",
+        "-z",
+        "notext",
+        "-z",
+        "ifunc-noplt",
+        "--no-warn-mismatch",
+        "--warn-common",
+        "--export-dynamic",
+        "--dynamic-linker",
+        "/red/herring",
+        "-X",
+    ],
+    srcs = [
+        "//:sys/conf/ldscript.amd64",
+        # ldscript.amd64's `INCLUDE debuginfo.ldscript` (searched in the -L
+        # sys/conf the reference's -L spells)
+        "//:sys/conf/debuginfo.ldscript",
+    ],
+    deps = [
+        ":cc_002",
+        ":cc_003",
+        ":cc_004",
+        ":cc_005",
+        ":cc_006",
+        ":cc_007",
+        ":cc_008",
+        ":cc_009",
+        ":cc_010",
+        ":cc_011",
+        ":cc_012",
+        ":cc_013",
+        ":cc_014",
+        ":cc_015",
+        ":cc_016",
+        ":cc_017",
+        ":cc_019",
+        ":cc_018",
+        ":cc_020",
+        ":cc_021",
+        ":cc_022",
+        ":cc_023",
+        ":cc_024",
+        ":cc_025",
+        ":cc_026",
+        ":cc_027",
+        ":cc_028",
+        ":cc_029",
+        ":cc_030",
+        ":cc_031",
+        ":cc_032",
+        ":cc_033",
+        ":cc_035",
+        ":cc_034",
+        ":cc_036",
+        ":cc_037",
+        ":cc_038",
+        ":cc_039",
+        ":cc_040",
+        ":cc_041",
+        ":cc_045",
+        ":cc_046",
+        ":cc_047",
+        ":cc_055",
+        ":cc_056",
+        ":cc_057",
+        ":cc_048",
+        ":cc_049",
+        "//sys/BZL:vdso",
+        "//sys/BZL:vdso_ia32",
+        ":cc_050",
+        ":cc_058",
+        ":cc_051",
+        ":cc_053",
+    ],
+    # the -shared hack object rides the link by name (the reference passes it
+    # by bare basename from the compile directory; a path spelling would put
+    # the sandbox path in the kernel's DT_NEEDED)
+    shared_libs = [":force-dynamic-hack"],
+    object_files = {
+        ":vdso": "elf-vdso.so.o",
+        ":vdso_ia32": "elf-vdso32.so.o",
+    },
+)

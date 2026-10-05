@@ -1,0 +1,37 @@
+package(default_visibility = ["//visibility:public"])
+load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+# byacc, built from the tree as FreeBSD does (usr.bin/yacc/Makefile): the
+# reference build's yacc is this binary, and the kernel-side generators call it.
+cc_binary(
+    name = "yacc",
+    srcs = [
+        "//contrib/byacc:closure.c",
+        "//contrib/byacc:error.c",
+        "//contrib/byacc:graph.c",
+        "//contrib/byacc:lalr.c",
+        "//contrib/byacc:lr0.c",
+        "//contrib/byacc:main.c",
+        "//contrib/byacc:mkpar.c",
+        "//contrib/byacc:mstring.c",
+        "//contrib/byacc:output.c",
+        "//contrib/byacc:reader.c",
+        "//contrib/byacc:symtab.c",
+        "//contrib/byacc:verbose.c",
+        "//contrib/byacc:warshall.c",
+        "//contrib/byacc:yaccpar.c",
+        "//contrib/byacc:defs.h",
+        "config.h",
+    ],
+    deps = [
+        "//lib/libc:legacy",
+        "//tools/build/cross-build:nbtool",
+        "//tools/build/cross-build:bitcount",
+    ],
+    copts = [
+        "-DHAVE_CONFIG_H",
+        "-Iusr.bin/yacc",
+        "-DMAXTABLE=INT_MAX",
+        "-DYYPATCH=20240109",  # contrib/byacc/VERSION
+    ],
+    linkstatic = True,
+)

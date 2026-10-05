@@ -1,0 +1,15 @@
+package(default_visibility = ["//visibility:public"])
+# Sources of flex (usr.bin/lex builds the tool from here; the scanner,
+# parser and skeleton arrive pre-generated as usr.bin/lex/init*.c -- the
+# bootstrap copies them over the generated files when they differ).
+exports_files([
+    "src/buf.c", "src/ccl.c", "src/dfa.c", "src/ecs.c", "src/filter.c",
+    "src/gen.c", "src/main.c", "src/misc.c", "src/nfa.c", "src/options.c",
+    "src/regex.c", "src/scanflags.c", "src/scanopt.c", "src/sym.c",
+    "src/tables.c", "src/tables_shared.c", "src/tblcmp.c", "src/yylex.c",
+    "src/libyywrap.c", "src/parse.y", "src/scan.l", "src/flex.skl",
+    "src/mkskel.sh",
+    "src/flexdef.h", "src/flexint.h", "src/FlexLexer.h", "src/options.h",
+    "src/scanopt.h",
+    "src/tables.h", "src/tables_shared.h", "src/version.h",
+])

@@ -1,0 +1,60 @@
+name: release
+# Build the FreeBSD kernel and the test root disk with Bazel, boot the kernel
+# directly under QEMU (PVH ELF boot; software emulation on the runner when
+# KVM is absent), SSH in, publish.
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: "loop run id"
+        required: false
+        default: "manual"
+      prerelease:
+        description: "publish as pre-release"
+        required: false
+        default: "true"
+  push:
+    tags: ["run-*"]
+permissions:
+  contents: write
+jobs:
+  image:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: bazel-contrib/setup-bazel@0.14.0
+        with:
+          bazelisk-cache: true
+          disk-cache: "${{ github.workflow }}"
+          repository-cache: true
+      - name: host tools the boot test needs
+        run: sudo apt-get update -q && sudo apt-get install -y -q qemu-system-x86 openssh-client
+      - name: build the image
+        run: bazel build //bazel/image:image
+      - name: boot test
+        id: boot
+        continue-on-error: true
+        run: |
+          set -x
+          cp bazel-bin/bazel/image/kernel kernel; cp bazel-bin/bazel/image/root.img root.img
+          printf '%s\n' "${{ secrets.TEST_SSH_KEY }}" > key; chmod 600 key
+          accel=$([ -w /dev/kvm ] && echo kvm || echo tcg)
+          qemu-system-x86_64 -accel $accel -m 512 -nographic -kernel kernel -append "vfs.root.mountfrom=ufs:/dev/vtbd0" \
+            -drive file=root.img,format=raw,if=virtio -netdev user,id=n0,hostfwd=tcp:127.0.0.1:2222-:22 -device virtio-net-pci,netdev=n0 \
+            > serial.log 2>&1 &
+          for i in $(seq 1 120); do
+            ssh -i key -p 2222 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=3 root@127.0.0.1 true 2>/dev/null && { echo "BOOT-SSH OK after ${i}s"; echo ok=1 >> "$GITHUB_OUTPUT"; exit 0; }
+            sleep 2
+          done
+          tail -40 serial.log; echo ok=0 >> "$GITHUB_OUTPUT"; exit 1
+      - name: release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || format('run-{0}', inputs.run_id) }}
+          name: freebsd-bzl ${{ github.ref_type == 'tag' && github.ref_name || inputs.run_id }}
+          prerelease: ${{ steps.boot.outputs.ok != '1' || inputs.prerelease == 'true' }}
+          body: "Boot test: ${{ steps.boot.outputs.ok == '1' && 'passed' || 'FAILED' }} (see the reports branch for the run's report)."
+          files: |
+            kernel
+            root.img

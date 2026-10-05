@@ -1,0 +1,21 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+# The libopenbsd sources the bootstrap tools link (m4's hash tables and
+# imsg helpers); recallocarray comes from libc's stdlib when bootstrapping.
+cc_library(
+    name = "openbsd",
+    srcs = [
+        "imsg-buffer.c",
+        "imsg.c",
+        "ohash.c",
+        "//lib/libc:stdlib/recallocarray.c",
+    ],
+    hdrs = ["imsg.h", "ohash.h", "unistd.h"],
+    includes = ["."],
+    deps = [
+        "//tools/build/cross-build:bitcount",
+        "//tools/build/cross-build:nbtool",
+    ],
+)

@@ -1,0 +1,38 @@
+package(default_visibility = ["//visibility:public"])
+load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+# rpcgen(1), as usr.bin/rpcgen/Makefile builds it: ten sources, no flags.
+# rpcgen compiles against rpc/types.h (the tree's sys/rpc one, as the
+# reference's legacy include dir provided).
+genrule(
+    name = "rpc_types",
+    srcs = ["//:sys/rpc/types.h"],
+    outs = ["rpc/types.h"],
+    cmd = "mkdir -p $(RULEDIR)/rpc && cp $(location //:sys/rpc/types.h) $(RULEDIR)/rpc/types.h",
+)
+
+cc_binary(
+    name = "rpcgen",
+    srcs = [
+        "rpc_main.c",
+        "rpc_clntout.c",
+        "rpc_cout.c",
+        "rpc_hout.c",
+        "rpc_parse.c",
+        "rpc_sample.c",
+        "rpc_scan.c",
+        "rpc_svcout.c",
+        "rpc_tblout.c",
+        "rpc_util.c",
+        "rpc_parse.h",
+        "rpc_scan.h",
+        "rpc_util.h",
+        ":rpc/types.h",
+    ],
+    copts = ["-I$(GENDIR)/usr.bin/rpcgen"],
+    deps = [
+        "//lib/libc:legacy",
+        "//tools/build/cross-build:nbtool",
+        "//tools/build/cross-build:bitcount",
+    ],
+    linkstatic = True,
+)

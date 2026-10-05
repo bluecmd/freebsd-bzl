@@ -1,0 +1,128 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+# Every header the kernel's TUs can reach (Bazel only puts declared files in
+# the compile sandbox); hdrs alone add no include root, so nothing is
+# shadowed. sys/ is the whole kernel's include surface -- the reference's
+# -Isys with the compile directory's machine/x86/i386 symlinks spelled as
+# plain include roots on the Bazel side.
+cc_library(
+    name = "kernel_headers",
+    hdrs = glob(
+        [
+            "sys/**/*.h",
+            "sys/**/*.inc",
+        ],
+        allow_empty = True,
+    ),
+    includes = ["sys"],
+    # the compile directory's machine/, x86/ and i386/ include trees (the
+    # reference's sys/amd64/include, sys/x86/include and sys/i386/include
+    # symlinks): reached under those names through each include package's
+    # view of its tree.
+    deps = [
+        "//sys/amd64/include:machine_include",
+        "//sys/x86/include:x86_include",
+        "//sys/i386/include:i386_include",
+    ],
+)
+
+# What config(8) reads to generate the compile directory: the config file
+# chain (BZL -> FIRECRACKER -> std.*), the files/options databases and the
+# Makefile template of sys/conf, all of sys/amd64/conf.
+# un-namespace.h is generated upstream; the bootstrap ships a reduced copy
+# that getopt.c's un-namespacing includes.
+exports_files([
+    "tools/build/libc-bootstrap/namespace.h",
+    "tools/build/libc-bootstrap/libc_private.h",
+    "tools/build/libc-bootstrap/un-namespace.h",
+    "include/getopt.h",
+    "sys/rpc/types.h",
+    "sys/sys/queue.h",
+    "tools/build/bootstrap-m4/inittokenizer.c",
+])
+
+filegroup(
+    name = "config_inputs",
+    srcs = glob(
+        [
+            "sys/conf/**",
+            "sys/amd64/conf/**",
+        ],
+        allow_empty = True,
+    ),
+)
+
+# The bus-interface descriptions (makeobjops.awk inputs) and the generator
+# scripts the kernel's generators are driven by.
+exports_files(glob(["sys/**/*_if.m"]))
+exports_files(glob(["sys/tools/*.awk", "sys/tools/*.sh"], allow_empty = True))
+exports_files(["sys/kern/vnode_if.src", "sys/dev/acpica/acpi_quirks"])
+# Generator scripts and one-off inputs the sys/BZL genrules drive (newvers.sh
+# also reads sys/sys/param.h for RELDATE and the tree's COPYRIGHT for its year).
+exports_files(glob(
+    [
+        "sys/kern/genoffset.sh",
+        "sys/kern/genassym.sh",
+        "sys/conf/vdso_amd64.ldscript",
+        "sys/conf/vdso_amd64_ia32.ldscript",
+        "sys/rpc/rpcsec_tls/*.x",
+        "sys/conf/newvers.sh",
+        "sys/sys/param.h",
+        "COPYRIGHT",
+    ],
+    allow_empty = True,
+))
+# Every kernel header: the genrules that stage a tree for the tree's own
+# cc/awk generators (the vdso scripts' -I$S, with -nostdinc compiles) need
+# the whole header surface declared, as the cc targets do through
+# kernel_headers.
+filegroup(
+    name = "sys_headers",
+    srcs = glob(["sys/**/*.h"], allow_empty = True),
+)
+# The compile-directory "symlink" include trees (machine/ -> sys/amd64/include,
+# x86/ -> sys/x86/include, i386/ -> sys/i386/include in the reference): the
+# kernel compile dir's -I$(GENDIR) must resolve machine/x86/i386 header paths,
+# so sys/BZL stages copies of these include trees under those prefixes. The
+# trees live in their own packages (their views are there too), hence the
+# indirection.
+filegroup(
+    name = "amd64_include",
+    srcs = ["//sys/amd64/include:tree"],
+)
+filegroup(
+    name = "x86_include",
+    srcs = ["//sys/x86/include:tree"],
+)
+filegroup(
+    name = "i386_include",
+    srcs = ["//sys/i386/include:tree"],
+)
+exports_files(glob(["sys/**/*.c"], allow_empty = True))
+exports_files(glob(["sys/**/*.S"], allow_empty = True))
+
+# One libc-side header the cross-build sys/types.h shim pulls
+# (#include <sys/bitcount.h>, "Needed for bitstring"): exposed through the
+# sys/sys include root, since no other kernel header may leak into the host
+# tools' compiles (the reference built them against the legacy libc headers).
+cc_library(
+    name = "bitcount_header",
+    hdrs = ["sys/sys/bitcount.h"],
+    includes = ["sys/sys"],
+)
+
+
+# The kernel endgame: the reference's ld line over the loose objects of the
+# compile groups, then the objcopy pair (kernel.full -> kernel.debug ->
+# kernel). The vDSO link objects ride the link from the vdso genrules'
+# outputs; force-dynamic-hack.pico sits between vnode_if.o and vers.o, where
+# the reference's link line has it.
+# The kernel endgame lives in sys/BZL (the reference build's compile
+# directory, where kernel.full/kernel.debug/kernel are produced); this alias
+# keeps the top-level //:kernel name the image build drives.
+alias(
+    name = "kernel",
+    actual = "//sys/BZL:kernel",
+)

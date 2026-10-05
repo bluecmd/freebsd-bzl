@@ -1,0 +1,13 @@
+package(default_visibility = ["//visibility:public"])
+load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+# file2c(1), as usr.bin/file2c/Makefile builds it: a single source.
+cc_binary(
+    name = "file2c",
+    srcs = ["file2c.c"],
+    deps = [
+        "//lib/libc:legacy",
+        "//tools/build/cross-build:nbtool",
+        "//tools/build/cross-build:bitcount",
+    ],
+    linkstatic = True,
+)

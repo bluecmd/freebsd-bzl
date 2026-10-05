@@ -1,0 +1,50 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+# The cross-build compatibility headers FreeBSD's own tools compile against
+# when built on Linux (-DHAVE_NBTOOL_CONFIG_H=1, usr.bin/*/Makefile): libc
+# shims for getprogname(3), err(3) and friends.
+cc_library(
+    name = "nbtool",
+    hdrs = glob(
+        ["include/**/*.h"],
+        allow_empty = True,
+    ),
+    includes = [
+        "include/common",
+        "include/linux",
+    ],
+    defines = [
+        "HAVE_NBTOOL_CONFIG_H=1",
+        "_GNU_SOURCE=1",
+    ],
+)
+
+# The shim's sys/types.h pulls one libc header (<sys/bitcount.h>) that only
+# exists in the kernel tree's sys/sys; copied here so the include root can
+# spell it as <sys/bitcount.h> without exposing the rest of the kernel tree
+# to the host tools' compiles (the reference built them against the legacy
+# libc headers).
+genrule(
+    name = "bitcount_copy",
+    srcs = ["//:sys/sys/bitcount.h"],
+    outs = ["sys/bitcount.h"],
+    cmd = "mkdir -p $(RULEDIR)/sys && cp $(location //:sys/sys/bitcount.h) $(RULEDIR)/sys/bitcount.h",
+)
+
+cc_library(
+    name = "bitcount",
+    hdrs = [":bitcount_copy"],
+    includes = ["."],
+)
+
+# getprogname(3) for the host (the tools' usage follows the FreeBSD form).
+cc_library(
+    name = "progname",
+    srcs = ["progname.c"],
+    deps = [
+        "//tools/build/cross-build:bitcount",
+        "//tools/build/cross-build:nbtool",
+    ],
+)
