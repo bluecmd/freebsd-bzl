@@ -1,0 +1,90 @@
+load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
+package(default_visibility = ["//visibility:public"])
+load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+# lex(1) = flex, built from the tree exactly as usr.bin/lex/Makefile does:
+# the scanner/parser/skeleton are the checked-in bootstrap copies
+# (initscan.c / initparse.c / initskel.c -- `make bootstrap` copies them over
+# the generated files when they differ, so building with them directly is the
+# same result), plus libyywrap from the flex contribution.
+# The reference's bootstrap: parse.h is the checked-in snapshot of the
+# generated grammar header (no yacc pass), and the skeleton that flex
+# compiles in comes from mkskel.sh through the bootstrap m4.
+copy_file(
+    name = "parse_h",
+    src = "initparse.h",
+    out = "parse.h",
+)
+
+genrule(
+    name = "skel",
+    outs = ["skel.c"],
+    cmd = ("sh $(location //contrib/flex:src/mkskel.sh)" +
+           " $$(dirname $(location //contrib/flex:src/flex.skl))" +
+           " $(location //usr.bin/m4:m4boot)" +
+           " `awk -f $(location version.awk) $(location config.h)` > $(RULEDIR)/skel.c"),
+    srcs = [
+        "config.h",
+        "version.awk",
+        "//contrib/flex:src/flex.skl",
+        "//contrib/flex:src/mkskel.sh",
+        "//contrib/flex:src/flexdef.h",
+        "//contrib/flex:src/flexint.h",
+        "//contrib/flex:src/tables_shared.h",
+        "//contrib/flex:src/tables_shared.c",
+    ],
+    tools = ["//usr.bin/m4:m4boot"],
+)
+
+cc_binary(
+    # a host tool: only really built in the exec configuration, as a genrule tool
+    target_compatible_with = [
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
+    ],
+    name = "lex",
+    srcs = [
+        "//contrib/flex:src/buf.c",
+        "//contrib/flex:src/ccl.c",
+        "//contrib/flex:src/dfa.c",
+        "//contrib/flex:src/ecs.c",
+        "//contrib/flex:src/filter.c",
+        "//contrib/flex:src/gen.c",
+        "//contrib/flex:src/main.c",
+        "//contrib/flex:src/misc.c",
+        "//contrib/flex:src/nfa.c",
+        "//contrib/flex:src/options.c",
+        "//contrib/flex:src/regex.c",
+        "//contrib/flex:src/scanflags.c",
+        "//contrib/flex:src/scanopt.c",
+        "//contrib/flex:src/sym.c",
+        "//contrib/flex:src/tables.c",
+        "//contrib/flex:src/tables_shared.c",
+        "//contrib/flex:src/tblcmp.c",
+        "//contrib/flex:src/yylex.c",
+        "initparse.c",
+        ":parse_h",
+        ":skel",
+        "initscan.c",
+        "config.h",
+        "//contrib/flex:src/flexdef.h",
+        "//contrib/flex:src/flexint.h",
+        "//contrib/flex:src/FlexLexer.h",
+        "//contrib/flex:src/options.h",
+        "//contrib/flex:src/tables.h",
+        "//contrib/flex:src/tables_shared.h",
+        "//contrib/flex:src/version.h",
+        "//contrib/flex:src/scanopt.h",
+    ],
+    deps = [
+        "//lib/libc:legacy",
+        "//tools/build/cross-build:nbtool",
+        "//tools/build/cross-build:bitcount",
+    ],
+    copts = [
+        "-DHAVE_CONFIG_H",
+        "-I$(GENDIR)/usr.bin/lex",
+        "-Iusr.bin/lex",
+        "-Icontrib/flex/src",
+    ],
+    linkstatic = True,
+)

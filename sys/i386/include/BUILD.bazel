@@ -1,0 +1,24 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+# This package owns only headers (see sys/amd64/include for why the view
+# lives here and not in sys/i386).
+# `#include <i386/...>`: the i386 include tree, viewed under the name the
+# kernel sources spell (the reference compile directory's i386 symlink).
+cc_library(
+    name = "i386_include",
+    hdrs = glob(
+        ["**"],
+        allow_empty = True,
+    ),
+    include_prefix = "i386",
+)
+
+filegroup(
+    name = "tree",
+    srcs = glob(
+        ["**"],
+        allow_empty = True,
+    ),
+)
