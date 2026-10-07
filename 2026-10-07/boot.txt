@@ -1,0 +1,2 @@
+BOOT-SSH OK after 3s: FreeBSD 15.1-RELEASE
+qemu-system-x86_64: terminating on signal 15 from pid 999027 (/bin/bash)
