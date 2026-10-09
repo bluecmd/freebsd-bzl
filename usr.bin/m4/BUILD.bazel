@@ -1,0 +1,46 @@
+load("//bazel/rules:yacc_lex.bzl", "lex_generate", "yacc_generate")
+load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+
+package(default_visibility = ["//visibility:public"])
+
+# The bootstrap m4 the reference builds first: m4's own sources with the
+# checked-in tokenizer snapshot, so it needs yacc but not lex (the real m4
+# would need lex, which needs an m4 for its skeleton at run time).
+yacc_generate(
+    name = "m4_parser",
+    src = "parser.y",
+    args = "-d -o parser.c",
+    produced = ["parser.c", "parser.h"],
+    outs = ["parser.c", "parser.h"],
+)
+
+cc_binary(
+    # a host tool: only really built in the exec configuration, as a genrule tool
+    target_compatible_with = [
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
+    ],
+    name = "m4boot",
+    srcs = [
+        "eval.c",
+        "expr.c",
+        "look.c",
+        "main.c",
+        "misc.c",
+        "gnum4.c",
+        "trace.c",
+        "mdef.h",
+        "stdd.h",
+        "extern.h",
+        "pathnames.h",
+        ":m4_parser",
+        "//:tools/build/bootstrap-m4/inittokenizer.c",
+    ],
+    copts = ["-DEXTENDED", "-I$(GENDIR)/usr.bin/m4"],
+    deps = [
+        "//lib/libc:legacy",
+        "//lib/libopenbsd:openbsd",
+        "//tools/build/cross-build:bitcount",
+        "//tools/build/cross-build:nbtool",
+    ],
+)

@@ -1,0 +1,46 @@
+# The release deliverable: the kernel the boot test loads directly (PVH ELF)
+# and the root disk the rc and sshd live on. The root disk is makefs(8) from
+# the tree -- the same binary the reference's obj-tools stage left in its
+# obj tree -- populating the pinned release's base.txz subset a boot test
+# needs (bazel/image/make-rootdisk.py holds the recipe, mined from the
+# loop's make-rootdisk.sh prototype).
+# just the stripped kernel: //sys/BZL:kernel's DefaultInfo carries the
+# kernel.full/kernel.debug endgame too, the boot test wants the stripped ELF
+filegroup(
+    name = "kernel_file",
+    srcs = ["//:kernel"],
+    output_group = "kernel",
+)
+
+genrule(
+    name = "kernel",
+    srcs = [":kernel_file"],
+    outs = ["kernel"],
+    cmd = "cp $(location :kernel_file) $@ && chmod 0755 $@",
+)
+
+genrule(
+    name = "rootdisk",
+    srcs = [
+        "make-rootdisk.py",
+        "rc",
+        "authorized_keys",
+        "@freebsd_base//:base.txz",
+    ],
+    tools = [
+        "//usr.sbin/makefs:makefs",
+        "@llvm_toolchain_llvm//:readelf",
+    ],
+    outs = ["root.img"],
+    cmd = ("python3 $(location make-rootdisk.py)" +
+           " --base-txz $(location @freebsd_base//:base.txz)" +
+           " --rc $(location rc) --authorized-keys $(location authorized_keys)" +
+           " --makefs $(location //usr.sbin/makefs:makefs)" +
+           " --readelf $(location @llvm_toolchain_llvm//:readelf)" +
+           " --out $@"),
+)
+
+filegroup(
+    name = "image",
+    srcs = [":kernel", ":rootdisk"],
+)

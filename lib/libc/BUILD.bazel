@@ -1,0 +1,88 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+# The libc-compat pieces the tree's host tools link (what the reference's
+# bootstrap stage provided: libc's getopt family, compiled against the real
+# libc headers with the cross-build shims layered after them). The genrule
+# stages that include surface in the reference's order -- libc headers and
+# the few sys headers libc_private.h reaches first, stubbed down to what the
+# tool compiles actually use.
+genrule(
+    name = "legacyinc",
+    outs = [
+        "legacyinc/namespace.h",
+        "legacyinc/libc_private.h",
+        "legacyinc/getopt.h",
+        "legacyinc/un-namespace.h",
+        "legacyinc/libsys.h",
+        "legacyinc/sys/_types.h",
+        "legacyinc/sys/_pthreadtypes.h",
+        "legacyinc/sys/_sigset.h",
+        "legacyinc/sys/queue.h",
+    ],
+    cmd = """
+        mkdir -p $(RULEDIR)/legacyinc/sys &&
+        cp $(location //:tools/build/libc-bootstrap/namespace.h) \
+           $(location //:tools/build/libc-bootstrap/libc_private.h) \
+           $(location //:tools/build/libc-bootstrap/un-namespace.h) \
+           $(location //:include/getopt.h) $(RULEDIR)/legacyinc/ &&
+        printf '#pragma once\n' > $(RULEDIR)/legacyinc/libsys.h &&
+        printf '#pragma once\n#include <sys/types.h>\ntypedef __SIZE_TYPE__ __size_t;\ntypedef __builtin_va_list __va_list;\ntypedef __int64_t __sbintime_t;\n' \
+            > $(RULEDIR)/legacyinc/sys/_types.h &&
+        printf '#pragma once\n' > $(RULEDIR)/legacyinc/sys/_pthreadtypes.h &&
+        printf '#pragma once\n' > $(RULEDIR)/legacyinc/sys/_sigset.h &&
+        cp $(location //:sys/sys/queue.h) $(RULEDIR)/legacyinc/sys/queue.h
+    """,
+    srcs = [
+        "//:tools/build/libc-bootstrap/namespace.h",
+        "//:tools/build/libc-bootstrap/libc_private.h",
+        "//:tools/build/libc-bootstrap/un-namespace.h",
+        "//:include/getopt.h",
+        "//:sys/sys/queue.h",
+    ],
+)
+
+exports_files(["stdlib/recallocarray.c"])
+
+cc_library(
+    # a host tool: only really built in the exec configuration, as a genrule tool
+    target_compatible_with = [
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
+    ],
+    name = "legacy",
+    srcs = [
+        "stdlib/getopt.c",
+        "stdlib/getopt_long.c",
+        "stdlib/strtonum.c",
+        # the rest of the reference's tools-build liblegacy.a that makefs(8)
+        # links (err/setmode/strtofflags+fflagstostr/flsll, the vis and
+        # pwcache pieces, fparseln): -D__DBINTERFACE_PRIVATE everywhere,
+        # HAVE_VIS/HAVE_SVIS 0 per the reference's vis compiles.
+        "gen/err.c",
+        "gen/setmode.c",
+        "gen/strtofflags.c",
+        "string/flsll.c",
+        "//:contrib/libc-vis/vis.c",
+        "//:contrib/libc-vis/unvis.c",
+        "//:contrib/libc-pwcache/pwcache.c",
+        "//:lib/libutil/fparseln.c",
+    ],
+    hdrs = [
+        ":legacyinc",
+        "//:contrib/libc-pwcache/pwcache.h",
+    ],
+    defines = [
+        "__DBINTERFACE_PRIVATE",
+        "HAVE_VIS=0",
+        "HAVE_SVIS=0",
+    ],
+    includes = ["legacyinc"],
+    deps = [
+        "//tools/build/cross-build:progname",
+        "//tools/build/cross-build:fgetln",
+        "//tools/build/cross-build:bitcount",
+        "//tools/build/cross-build:nbtool",
+    ],
+)

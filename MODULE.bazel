@@ -1,0 +1,48 @@
+module(name = "freebsd", version = "0.1.0")
+
+bazel_dep(name = "rules_cc", version = "0.2.25")
+bazel_dep(name = "platforms", version = "1.1.0")
+bazel_dep(name = "bazel_skylib", version = "1.9.2")
+bazel_dep(name = "toolchains_llvm", version = "1.11.0")
+
+# The one compiler on both sides: the recorded reference cross-build pinned
+# LLVM 19.1.7 (x86_64-unknown-freebsd15.1, kernel-toolchain + buildkernel);
+# Bazel's host (exec) cc toolchain is the same release, and the kernel cc
+# toolchain (//toolchain) points at the same binaries.
+llvm = use_extension("@toolchains_llvm//toolchain/extensions:llvm.bzl", "llvm")
+llvm.toolchain(llvm_version = "19.1.7")
+use_repo(llvm, "llvm_toolchain", "llvm_toolchain_llvm")
+
+# The release's base system the root disk is populated from, pinned by sha256
+# (bazel/image/base.bzl).
+freebsd_base = use_repo_rule("//bazel/image:base.bzl", "freebsd_base")
+freebsd_base(name = "freebsd_base")
+
+# The kernel cc toolchain: a repository linking that distribution's tools
+# (package-relative tool_paths, so genrules get $(NM)/$(LD)/$(OBJCOPY)); its
+# compile line is //toolchain:kernel_flags.bzl, derived from the recorded
+# reference build (models/kernel/model.capture.json).
+kernel_llvm_toolchain = use_repo_rule("//bazel/rules:kernel_llvm_toolchain.bzl", "kernel_llvm_toolchain")
+kernel_llvm_toolchain(
+    name = "kernel_llvm",
+    clang = "@llvm_toolchain_llvm//:bin/clang",
+    config_bzl = "//bazel/rules:kernel_cc_toolchain_config.bzl",
+    files = [
+        "@llvm_toolchain_llvm//:bin",
+        "@llvm_toolchain_llvm//:include",
+        "@llvm_toolchain_llvm//:lib",
+    ],
+    flags_bzl = "//toolchain:kernel_flags.bzl",
+    include_dirs_symbol = "",
+    target_compatible_with = [
+        "@platforms//os:freebsd",
+        "@platforms//cpu:x86_64",
+        "//platforms:kernel",
+    ],
+    target_cpu = "x86_64",
+    target_system_name = "x86_64-unknown-freebsd15.1",
+)
+
+# the kernel toolchain first: it requires //platforms:kernel, so it is only
+# picked for the kernel platform; the plain LLVM toolchain serves the exec platform
+register_toolchains("@kernel_llvm//:toolchain", "@llvm_toolchain//:all")

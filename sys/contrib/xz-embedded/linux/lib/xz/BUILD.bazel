@@ -1,0 +1,50 @@
+# The kernel's compile groups for sys/contrib/xz-embedded/linux/lib/xz (run 2026-10-09: one package
+# per kernel source directory; the reference's link-line object
+# order is carried by the kernel link's deps list).
+load("//bazel/rules:cc_per_source_library.bzl", "cc_per_source_library")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(glob(["**/*"], allow_empty = True))
+
+# The directory's headers, for the kernel's -Isys include
+# surface: root kernel_headers / sys_headers take this carrier
+# across the package boundary (their glob stops here).
+filegroup(
+    name = "headers",
+    srcs = glob(["**/*.h", "**/*.inc"], allow_empty = True),
+)
+
+cc_per_source_library(
+    name = "cc_006",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror",
+        "-DXZ_USE_CRC64",
+        "-Isys/contrib/xz-embedded/freebsd/",
+        "-Isys/contrib/xz-embedded/linux/lib/xz/",
+        "-Isys/contrib/xz-embedded/linux/include/linux/"
+    ],
+    srcs = [
+        "xz_crc32.c",
+        "xz_crc64.c",
+        "xz_dec_bcj.c",
+        "xz_dec_lzma2.c",
+        "xz_dec_stream.c",
+    ],
+    hdrs = [
+        "//sys/BZL:offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
