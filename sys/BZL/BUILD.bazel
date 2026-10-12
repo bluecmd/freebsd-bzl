@@ -1,0 +1,1806 @@
+load("//bazel/rules:cc_per_source_library.bzl", "cc_per_source_library")
+load("//bazel/rules:freebsd_kernel_link.bzl", "freebsd_kernel_link")
+load("//bazel/rules:kernel_generator.bzl", "awk_generate", "makeobjops")
+load("//bazel/rules:kernel_steps.bzl",
+     "acpi_wakecode",
+     "gen_offsets",
+     "kernel_config",
+     "newvers",
+     "rpcgen_xdr",
+     "vdso_image",)
+
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+kernel_config(
+    name = "config",
+    conf = "//:sys/amd64/conf/BZL",
+    conf_includes = ["//:config_inputs", "//:sys/amd64/conf/DEFAULTS"],
+    outs = [
+        "config.c",
+        "env.c",
+        "hints.c",
+        "opt_aac.h",
+        "opt_aacraid.h",
+        "opt_accept_filter_data.h",
+        "opt_accept_filter_dns.h",
+        "opt_accept_filter_http.h",
+        "opt_accept_filter_tls.h",
+        "opt_acpi.h",
+        "opt_ada.h",
+        "opt_adaptive_mutexes.h",
+        "opt_agp.h",
+        "opt_ah.h",
+        "opt_aic79xx.h",
+        "opt_aic7xxx.h",
+        "opt_alq.h",
+        "opt_altq.h",
+        "opt_amdsbwd.h",
+        "opt_asmc.h",
+        "opt_ath.h",
+        "opt_atkbd.h",
+        "opt_atpic.h",
+        "opt_auto_eoi.h",
+        "opt_bce.h",
+        "opt_bhyve_snapshot.h",
+        "opt_bootp.h",
+        "opt_bpf.h",
+        "opt_bus.h",
+        "opt_bwi.h",
+        "opt_bwn.h",
+        "opt_callout_profiling.h",
+        "opt_cam.h",
+        "opt_capsicum.h",
+        "opt_carp.h",
+        "opt_cc.h",
+        "opt_cd.h",
+        "opt_cfi.h",
+        "opt_clock.h",
+        "opt_config.h",
+        "opt_cpu.h",
+        "opt_cy_pci_fastintr.h",
+        "opt_da.h",
+        "opt_dcons.h",
+        "opt_ddb.h",
+        "opt_debug_lockf.h",
+        "opt_debug_si.h",
+        "opt_device_polling.h",
+        "opt_directio.h",
+        "opt_dontuse.h",
+        "opt_drm.h",
+        "opt_efirt.h",
+        "opt_ekcd.h",
+        "opt_etherswitch.h",
+        "opt_evdev.h",
+        "opt_fb.h",
+        "opt_fdc.h",
+        "opt_ffclock.h",
+        "opt_ffs.h",
+        "opt_gdb.h",
+        "opt_geom.h",
+        "opt_global.h",
+        "opt_gpio.h",
+        "opt_gzio.h",
+        "opt_hid.h",
+        "opt_hifn.h",
+        "opt_hkbd.h",
+        "opt_hn.h",
+        "opt_hwpmc_hooks.h",
+        "opt_hwt_hooks.h",
+        "opt_iflib.h",
+        "opt_ifmedia.h",
+        "opt_inet.h",
+        "opt_inet6.h",
+        "opt_init_path.h",
+        "opt_intpm.h",
+        "opt_iommu.h",
+        "opt_ipdivert.h",
+        "opt_ipdn.h",
+        "opt_ipfilter.h",
+        "opt_ipfw.h",
+        "opt_ipsec.h",
+        "opt_ipstealth.h",
+        "opt_isa.h",
+        "opt_isci.h",
+        "opt_isp.h",
+        "opt_iwm.h",
+        "opt_iwn.h",
+        "opt_ixl.h",
+        "opt_kbd.h",
+        "opt_kbdmux.h",
+        "opt_kcov.h",
+        "opt_kdb.h",
+        "opt_kdtrace.h",
+        "opt_kern_tls.h",
+        "opt_kgssapi.h",
+        "opt_kld.h",
+        "opt_kqueue.h",
+        "opt_krpc.h",
+        "opt_kstack_max_pages.h",
+        "opt_kstack_pages.h",
+        "opt_kstack_usage_prof.h",
+        "opt_ktr.h",
+        "opt_ktrace.h",
+        "opt_libalias.h",
+        "opt_libiconv.h",
+        "opt_libmchain.h",
+        "opt_lindebugfs.h",
+        "opt_lpt.h",
+        "opt_mac.h",
+        "opt_malo.h",
+        "opt_maxmem.h",
+        "opt_maxphys.h",
+        "opt_maxusers.h",
+        "opt_mbuf_profiling.h",
+        "opt_mbuf_stress_test.h",
+        "opt_md.h",
+        "opt_mfi.h",
+        "opt_mmccam.h",
+        "opt_mprof.h",
+        "opt_mptable_force_htt.h",
+        "opt_mptable_linux_bug_compat.h",
+        "opt_mrouting.h",
+        "opt_msgbuf.h",
+        "opt_mvneta.h",
+        "opt_mwl.h",
+        "opt_netgraph.h",
+        "opt_netsmb.h",
+        "opt_nfs.h",
+        "opt_nfslockd.h",
+        "opt_nfsroot.h",
+        "opt_no_adaptive_rwlocks.h",
+        "opt_no_adaptive_sx.h",
+        "opt_ntp.h",
+        "opt_nvme.h",
+        "opt_ofed.h",
+        "opt_panic.h",
+        "opt_param.h",
+        "opt_pcfclock.h",
+        "opt_pci.h",
+        "opt_pf.h",
+        "opt_platform.h",
+        "opt_plip.h",
+        "opt_pmap.h",
+        "opt_posix.h",
+        "opt_ppb_1284.h",
+        "opt_ppc.h",
+        "opt_printf.h",
+        "opt_pseudofs.h",
+        "opt_psm.h",
+        "opt_pt.h",
+        "opt_qat.h",
+        "opt_quota.h",
+        "opt_ratelimit.h",
+        "opt_rootdevname.h",
+        "opt_route.h",
+        "opt_rss.h",
+        "opt_rtwn.h",
+        "opt_sa.h",
+        "opt_safe.h",
+        "opt_sched.h",
+        "opt_scsi.h",
+        "opt_sctp.h",
+        "opt_ses.h",
+        "opt_siba.h",
+        "opt_siftr.h",
+        "opt_sleepqueue_profiling.h",
+        "opt_slhci.h",
+        "opt_slip.h",
+        "opt_smp.h",
+        "opt_snd.h",
+        "opt_spi.h",
+        "opt_splash.h",
+        "opt_stack.h",
+        "opt_suiddir.h",
+        "opt_sym.h",
+        "opt_syscons.h",
+        "opt_sysctl.h",
+        "opt_sysvipc.h",
+        "opt_tarfs.h",
+        "opt_tcphpts.h",
+        "opt_tdma.h",
+        "opt_teken.h",
+        "opt_ti.h",
+        "opt_tmpfs.h",
+        "opt_tpm.h",
+        "opt_turnstile_profiling.h",
+        "opt_u3g.h",
+        "opt_uart.h",
+        "opt_ufs.h",
+        "opt_ukbd.h",
+        "opt_umtx_profiling.h",
+        "opt_uplcom.h",
+        "opt_usb.h",
+        "opt_uvscom.h",
+        "opt_verbose_sysinit.h",
+        "opt_vesa.h",
+        "opt_vga.h",
+        "opt_videomode.h",
+        "opt_vlan.h",
+        "opt_vm.h",
+        "opt_watchdog.h",
+        "opt_witness.h",
+        "opt_wlan.h",
+        "opt_wpi.h",
+        "opt_x86bios.h",
+        "opt_xbonehack.h",
+        "opt_xdr.h",
+        "opt_zstdio.h"
+    ],
+)
+
+
+makeobjops(
+    name = "acpi_if",
+    src = "//sys/dev/acpica:acpi_if.m",
+)
+
+
+makeobjops(
+    name = "acpi_wmi_if",
+    src = "//:sys/dev/acpi_support/acpi_wmi_if.m",
+)
+
+
+makeobjops(
+    name = "bus_if",
+    src = "//sys/kern:bus_if.m",
+)
+
+
+makeobjops(
+    name = "card_if",
+    src = "//:sys/dev/cardbus/card_if.m",
+)
+
+
+makeobjops(
+    name = "clock_if",
+    src = "//sys/kern:clock_if.m",
+)
+
+
+makeobjops(
+    name = "cpufreq_if",
+    src = "//sys/kern:cpufreq_if.m",
+)
+
+
+makeobjops(
+    name = "cryptodev_if",
+    src = "//sys/opencrypto:cryptodev_if.m",
+)
+
+
+makeobjops(
+    name = "device_if",
+    src = "//sys/kern:device_if.m",
+)
+
+
+makeobjops(
+    name = "fb_if",
+    src = "//:sys/dev/fb/fb_if.m",
+)
+
+
+makeobjops(
+    name = "g_part_if",
+    src = "//sys/geom/part:g_part_if.m",
+)
+
+
+makeobjops(
+    name = "g_raid_md_if",
+    src = "//sys/geom/raid:g_raid_md_if.m",
+)
+
+
+makeobjops(
+    name = "g_raid_tr_if",
+    src = "//sys/geom/raid:g_raid_tr_if.m",
+)
+
+
+makeobjops(
+    name = "isa_if",
+    src = "//sys/isa:isa_if.m",
+)
+
+
+makeobjops(
+    name = "linker_if",
+    src = "//sys/kern:linker_if.m",
+)
+
+
+makeobjops(
+    name = "mmcbr_if",
+    src = "//:sys/dev/mmc/mmcbr_if.m",
+)
+
+
+makeobjops(
+    name = "mmcbus_if",
+    src = "//:sys/dev/mmc/mmcbus_if.m",
+)
+
+
+makeobjops(
+    name = "pci_if",
+    src = "//sys/dev/pci:pci_if.m",
+)
+
+
+makeobjops(
+    name = "pci_iov_if",
+    src = "//sys/dev/pci:pci_iov_if.m",
+)
+
+
+makeobjops(
+    name = "pcib_if",
+    src = "//sys/dev/pci:pcib_if.m",
+)
+
+
+makeobjops(
+    name = "power_if",
+    src = "//:sys/dev/cardbus/power_if.m",
+)
+
+
+makeobjops(
+    name = "serdev_if",
+    src = "//sys/kern:serdev_if.m",
+)
+
+
+makeobjops(
+    name = "uart_if",
+    src = "//sys/dev/uart:uart_if.m",
+)
+
+
+makeobjops(
+    name = "virtio_if",
+    src = "//sys/dev/virtio:virtio_if.m",
+)
+
+
+makeobjops(
+    name = "virtio_bus_if",
+    src = "//sys/dev/virtio:virtio_bus_if.m",
+)
+
+
+makeobjops(
+    name = "virtio_pci_if",
+    src = "//sys/dev/virtio/pci:virtio_pci_if.m",
+)
+
+
+makeobjops(
+    name = "xenbus_if",
+    src = "//sys/xen/xenbus:xenbus_if.m",
+)
+
+
+makeobjops(
+    name = "xenbusb_if",
+    src = "//sys/xen/xenbus:xenbusb_if.m",
+)
+
+
+makeobjops(
+    name = "xenmem_if",
+    src = "//sys/xen:xenmem/xenmem_if.m",
+)
+
+
+
+# vnode_if_newproto.h, the -p pass of sys/tools/vnode_if.awk over
+# sys/kern/vnode_if.src (sys/conf/kern.mk's four awk stages).
+
+# vnode_if_typedef.h, the -q pass of the same script.
+
+# vnode_if.c, the -c pass of the same script.
+awk_generate(
+    name = "vnode_if",
+    src = "//sys/kern:vnode_if.src",
+    script = "//:sys/tools/vnode_if.awk",
+    outs = ["vnode_if.c", "vnode_if.h", "vnode_if_newproto.h", "vnode_if_typedef.h"],
+    modes = {"vnode_if.c": "-c", "vnode_if.h": "-h",
+             "vnode_if_newproto.h": "-p", "vnode_if_typedef.h": "-q"},
+)
+
+# vnode_if.h, the -h pass of the same script.
+
+# acpi_quirks.h, sys/tools/acpi_quirks2h.awk over the quirks table.
+awk_generate(
+    name = "acpi_quirks",
+    src = "//sys/dev/acpica:acpi_quirks",
+    script = "//:sys/tools/acpi_quirks2h.awk",
+    outs = ["acpi_quirks.h"],
+)
+
+
+# Every generated kernel-build file the compiles reach: config(8)'s outputs,
+# the staged include trees and the generator outputs.
+filegroup(
+    name = "generated",
+    srcs = [
+        ":config",
+        ":acpi_quirks.h",
+        ":vnode_if_newproto.h",
+        ":vnode_if_typedef.h",
+        ":vnode_if.c",
+        ":vnode_if.h",
+        ":newvers",
+        ":rpctlscd_gen",
+        ":rpctlssd_gen",
+        ":bus_if.c",
+        ":bus_if.h",
+        ":card_if.c",
+        ":card_if.h",
+        ":clock_if.c",
+        ":clock_if.h",
+        ":cpufreq_if.c",
+        ":cpufreq_if.h",
+        ":cryptodev_if.c",
+        ":cryptodev_if.h",
+        ":device_if.c",
+        ":device_if.h",
+        ":fb_if.c",
+        ":fb_if.h",
+        ":g_part_if.c",
+        ":g_part_if.h",
+        ":g_raid_md_if.c",
+        ":g_raid_md_if.h",
+        ":g_raid_tr_if.c",
+        ":g_raid_tr_if.h",
+        ":isa_if.c",
+        ":isa_if.h",
+        ":linker_if.c",
+        ":linker_if.h",
+        ":mmcbr_if.c",
+        ":mmcbr_if.h",
+        ":mmcbus_if.c",
+        ":mmcbus_if.h",
+        ":pci_if.c",
+        ":pci_if.h",
+        ":pci_iov_if.c",
+        ":pci_iov_if.h",
+        ":pcib_if.c",
+        ":pcib_if.h",
+        ":power_if.c",
+        ":power_if.h",
+        ":serdev_if.c",
+        ":serdev_if.h",
+        ":uart_if.c",
+        ":uart_if.h",
+        ":virtio_bus_if.c",
+        ":virtio_bus_if.h",
+        ":virtio_if.c",
+        ":virtio_if.h",
+        ":virtio_pci_if.c",
+        ":virtio_pci_if.h",
+        ":xenbusb_if.c",
+        ":xenbusb_if.h",
+        ":xenbus_if.c",
+        ":xenbus_if.h",
+        ":xenmem_if.c",
+        ":xenmem_if.h",
+        ":acpi_if.c",
+        ":acpi_if.h",
+        ":acpi_wmi_if.c",
+        ":acpi_wmi_if.h",
+    ],
+)
+
+gen_offsets(
+    name = "offset_inc",
+    archive = ":cc_000",
+    member = "genoffset.o",
+    script = "//sys/kern:genoffset.sh",
+    out = "offset.inc",
+)
+
+gen_offsets(
+    name = "assym_inc",
+    archive = ":cc_061",
+    member = "genassym.o",
+    script = "//sys/kern:genassym.sh",
+    awk = "//usr.bin/awk:awk",
+    out = "assym.inc",
+)
+
+gen_offsets(
+    name = "ia32_assym",
+    archive = ":cc_061",
+    member = "ia32_genassym.o",
+    script = "//sys/kern:genassym.sh",
+    awk = "//usr.bin/awk:awk",
+    out = "ia32_assym.h",
+)
+
+# acpi_wakecode.bin/.h/wakedata.h, as sys/conf/files.amd64's before-depend
+# rules chain them off the acpi_wakecode.o of cc_002.
+acpi_wakecode(
+    name = "acpi_wakecode",
+    archive = ":cc_062",
+    bin = "acpi_wakecode.bin",
+    hdr = "acpi_wakecode.h",
+    data = "acpi_wakedata.h",
+)
+
+# vers.c + version, as kern.post.mk's newvers rule runs newvers.sh (-R: no
+# metadata). The tree's COPYRIGHT (staged) fixes the year; the make -V
+# queries KERN_IDENT/CC the Makefile answers are answered by a shim, whose
+# CC is the toolchain's clang (newvers.sh runs "$CC -v" for its
+# compiler_version line).
+newvers(
+    name = "newvers",
+    script = "//:sys/conf/newvers.sh",
+    copyright = "//:COPYRIGHT",
+    sources = ["//:sys/sys/param.h"],
+    vers = "vers.c",
+    version = "version",
+)
+
+# The vdso images, as sys/tools/amd64_vdso.sh / amd64_ia32_vdso.sh build
+# them in the compile directory: a staged tree (opt_global.h and the
+# machine/x86/i386 include symlinks) plus S=sys. ELFDUMP is left unset --
+# there is no elfdump in the sandbox, exactly as in the reference build,
+# where its RELOCS check is what fails silently.
+vdso_image(
+    name = "vdso",
+    script = "//:sys/tools/amd64_vdso.sh",
+    opt_global = ":opt_global.h",
+    assym = ":assym.inc",
+    includes = ["//:amd64_include", "//:sys_headers"],
+    sources = [
+        "//sys/amd64/amd64:sigtramp.S",
+        "//:sys/tools/vdso_wrap.S",
+        "//:sys/conf/vdso_amd64.ldscript",
+    ],
+    outs = ["sigtramp.pico", "elf-vdso.so.o", "elf-vdso.so.1", "vdso_offsets.h"],
+)
+
+vdso_image(
+    name = "vdso_ia32",
+    script = "//:sys/tools/amd64_ia32_vdso.sh",
+    opt_global = ":opt_global.h",
+    assym = ":ia32_assym.h",
+    includes = ["//:amd64_include", "//:x86_include", "//:i386_include", "//:sys_headers"],
+    sources = [
+        "//sys/amd64/ia32:ia32_sigtramp.S",
+        "//:sys/tools/vdso_wrap.S",
+        "//:sys/conf/vdso_amd64_ia32.ldscript",
+    ],
+    i386 = True,
+    outs = ["ia32_sigtramp.pico", "elf-vdso32.so.o", "elf-vdso32.so.1", "vdso_ia32_offsets.h"],
+)
+
+# The rpctlscd/rpctlssd rpcgen outputs, as kern.pre.mk's RPCGEN rules run
+# them (rpcgen preprocesses through $CPP; the reference's cpp is the
+# toolchain's clang-cpp).
+rpcgen_xdr(
+    name = "rpctlscd_gen",
+    x = "//sys/rpc/rpcsec_tls:rpctlscd.x",
+    flags = {"rpctlscd.h": "-hM", "rpctlscd_xdr.c": "-c", "rpctlscd_clnt.c": "-lM"},
+    grep = {"rpctlscd.h": "pthread.h", "rpctlscd_clnt.c": "string.h"},
+    outs = ["rpctlscd.h", "rpctlscd_xdr.c", "rpctlscd_clnt.c"],
+)
+
+rpcgen_xdr(
+    name = "rpctlssd_gen",
+    x = "//sys/rpc/rpcsec_tls:rpctlssd.x",
+    flags = {"rpctlssd.h": "-hM", "rpctlssd_xdr.c": "-c", "rpctlssd_clnt.c": "-lM"},
+    grep = {"rpctlssd.h": "pthread.h", "rpctlssd_clnt.c": "string.h"},
+    outs = ["rpctlssd.h", "rpctlssd_xdr.c", "rpctlssd_clnt.c"],
+)
+
+# The BFD dynamic-mode hack: an empty translation unit (kern.post.mk's
+# ":> ${.TARGET}"), compiled with the kernel's line and linked -shared so
+# the kernel link stays in dynamic mode.
+genrule(
+    name = "force-dynamic-hack.c",
+    outs = ["force-dynamic-hack.c"],
+    cmd = ": > '$(location :force-dynamic-hack.c)'",
+)
+
+load("//bazel/rules:freebsd_kernel_link.bzl", "freebsd_kernel_link")
+
+# The BFD dynamic-mode hack, as the reference builds it: the empty TU compiled
+# with the kernel's line (cc_060), then the driver links it -shared into the
+# .pico (kern.post.mk's .pico rule: the kernel's compile flags ride the link
+# line; -MD/-MF/-MT track bmake's .depend side file, which has no artifact
+# here). The objcopy endgame does not run -- out/debug_out unset.
+freebsd_kernel_link(
+    name = "force-dynamic-hack",
+    out = "force-dynamic-hack.pico",
+    driver = "@kernel_llvm//:bin/clang",
+    args = [
+        "-target",
+        "x86_64-unknown-freebsd15.1",
+        "--ld-path=$(location @kernel_llvm//:bin/ld.lld)",
+        "-shared",
+        "-O2",
+        "-pipe",
+        "-fno-strict-aliasing",
+        "-g",
+        "-nostdinc",
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-D_KERNEL",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-fno-common",
+        "-fno-omit-frame-pointer",
+        "-mno-omit-leaf-frame-pointer",
+        "-ffile-prefix-map=$(GENDIR)/sys/BZL=/usr/obj/usr/src/amd64.amd64/sys/BZL",
+        "-mcmodel=kernel",
+        "-mno-red-zone",
+        "-mno-mmx",
+        "-mno-sse",
+        "-msoft-float",
+        "-fno-asynchronous-unwind-tables",
+        "-ffreestanding",
+        "-fwrapv",
+        "-fstack-protector",
+        "-gdwarf-4",
+        "-Wall",
+        "-Wstrict-prototypes",
+        "-Wmissing-prototypes",
+        "-Wpointer-arith",
+        "-Wcast-qual",
+        "-Wundef",
+        "-Wno-pointer-sign",
+        "-D__printf__=__freebsd_kprintf__",
+        "-Wmissing-include-dirs",
+        "-fdiagnostics-show-option",
+        "-Wno-unknown-pragmas",
+        "-Wswitch",
+        "-Wno-error=tautological-compare",
+        "-Wno-error=empty-body",
+        "-Wno-error=parentheses-equality",
+        "-Wno-error=unused-function",
+        "-Wno-error=pointer-sign",
+        "-Wno-error=shift-negative-value",
+        "-Wno-address-of-packed-member",
+        "-Wno-format-zero-length",
+        "-mno-aes",
+        "-mno-avx",
+        "-std=gnu17",
+        "-nostdlib",
+    ],
+    srcs = [
+        "@kernel_llvm//:bin/ld.lld",
+        "//:sys_headers",
+    ],
+    deps = [":cc_060"],
+)
+
+cc_per_source_library(
+    name = "cc_000",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-fcommon"
+    ],
+    srcs = [
+    "//sys/kern:genoffset.c",
+    ],
+    hdrs = [
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+# The genassym objects: their compiles read offset.inc (kpilite.h pulls it in
+# whenever GENOFFSET is undefined), so they sit behind the offset generator.
+cc_per_source_library(
+    name = "cc_061",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-fcommon"
+    ],
+    srcs = [
+    "//sys/amd64/amd64:genassym.c",
+    "//sys/compat/ia32:ia32_genassym.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+# acpi_wakecode.o is a tool object, not a kernel object: the reference
+# compiles it for the wakecode chain only, so its own target keeps it out of
+# the link's loose objects.
+cc_per_source_library(
+    name = "cc_062",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-x",
+        "assembler-with-cpp",
+        "-DLOCORE",
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    "//sys/amd64/acpica:acpi_wakecode.S",
+    ],
+    hdrs = [
+        ":assym_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_013",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":card_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_014",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":power_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_015",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":fb_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_016",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":mmcbr_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_017",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":mmcbus_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_018",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":pci_iov_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_019",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":pci_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_020",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":pcib_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_021",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":uart_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_022",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":virtio_bus_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_023",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":virtio_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_024",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":virtio_pci_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_025",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":g_part_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_026",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":g_raid_md_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_027",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":g_raid_tr_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_028",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":isa_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_029",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":bus_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_030",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":clock_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_031",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":cpufreq_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_032",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":device_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_033",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":linker_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_035",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":serdev_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_038",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":cryptodev_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_041",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h"
+    ],
+    srcs = [
+    ":rpctlscd_gen",
+    ":rpctlssd_gen",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_045",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":xenbus_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_046",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":xenbusb_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_047",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":xenmem_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_048",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":acpi_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_049",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":acpi_wmi_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_051",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":config",
+    ":vnode_if.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+# vers.o last in the link line, after force-dynamic-hack.pico -- the
+# reference's link order tail.
+cc_per_source_library(
+    name = "cc_053",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":newvers",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+cc_per_source_library(
+    name = "cc_060",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+    ":force-dynamic-hack.c",
+    ],
+    hdrs = [
+        ":offset_inc",
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
+
+freebsd_kernel_link(
+    name = "kernel",
+    out = "kernel.full",
+    debug_out = "kernel.debug",
+    stripped_out = "kernel",
+    args = [
+        "-m",
+        "elf_x86_64_fbsd",
+        "-Bdynamic",
+        "-L",
+        "sys/conf",
+        "-T",
+        "$(location //:sys/conf/ldscript.amd64)",
+        "--build-id=sha1",
+        "-z",
+        "max-page-size=2097152",
+        "-z",
+        "notext",
+        "-z",
+        "ifunc-noplt",
+        "--no-warn-mismatch",
+        "--warn-common",
+        "--export-dynamic",
+        "--dynamic-linker",
+        "/red/herring",
+        "-X",
+    ],
+    srcs = [
+        "//:sys/conf/ldscript.amd64",
+        # ldscript.amd64's `INCLUDE debuginfo.ldscript` (searched in the -L
+        # sys/conf the reference's -L spells)
+        "//:sys/conf/debuginfo.ldscript",
+    ],
+    deps = [
+        "//sys/amd64/amd64:cc_002",
+        "//sys/crypto/aesni:cc_002",
+        "//sys/kern:cc_002",
+        "//sys/amd64/acpica:cc_003",
+        "//sys/amd64/amd64:cc_003",
+        "//sys/amd64/ia32:cc_003",
+        "//sys/amd64/pci:cc_003",
+        "//sys/compat/freebsd32:cc_003",
+        "//sys/compat/ia32:cc_003",
+        "//sys/compat/x86bios:cc_003",
+        "//sys/contrib/dev/acpica/components/dispatcher:cc_003",
+        "//sys/contrib/dev/acpica/components/events:cc_003",
+        "//sys/contrib/dev/acpica/components/executer:cc_003",
+        "//sys/contrib/dev/acpica/components/hardware:cc_003",
+        "//sys/contrib/dev/acpica/components/namespace:cc_003",
+        "//sys/contrib/dev/acpica/components/parser:cc_003",
+        "//sys/contrib/dev/acpica/components/resources:cc_003",
+        "//sys/contrib/dev/acpica/components/tables:cc_003",
+        "//sys/contrib/dev/acpica/components/utilities:cc_003",
+        "//sys/contrib/libnv:cc_003",
+        "//sys/contrib/x86emu:cc_003",
+        "//sys/crypto/aesni:cc_003",
+        "//sys/crypto/camellia:cc_003",
+        "//sys/crypto/chacha20:cc_003",
+        "//sys/crypto:cc_003",
+        "//sys/crypto/rijndael:cc_003",
+        "//sys/crypto:cc_003_2",
+        "//sys/crypto/sha2:cc_003",
+        "//sys/crypto/siphash:cc_003",
+        "//sys/crypto/skein:cc_003",
+        "//sys/ddb:cc_003",
+        "//sys/dev/acpica/Osd:cc_003",
+        "//sys/dev/acpica:cc_003",
+        "//sys/dev/efidev:cc_003",
+        "//sys/dev/io:cc_003",
+        "//sys/dev/kvm_clock:cc_003",
+        "//sys/dev/led:cc_003",
+        "//sys/dev/md:cc_003",
+        "//sys/dev/mem:cc_003",
+        "//sys/dev/netmap:cc_003",
+        "//sys/dev/null:cc_003",
+        "//sys/dev/pci:cc_003",
+        "//sys/dev/random:cc_003",
+        "//sys/dev/smbios:cc_003",
+        "//sys/dev/tcp_log:cc_003",
+        "//sys/dev/uart:cc_003",
+        "//sys/dev/virtio/block:cc_003",
+        "//sys/dev/virtio/mmio:cc_003",
+        "//sys/dev/virtio/network:cc_003",
+        "//sys/dev/virtio/pci:cc_003",
+        "//sys/dev/virtio:cc_003",
+        "//sys/dev/vmgenc:cc_003",
+        "//sys/dev/watchdog:cc_003",
+        "//sys/dev/xen/balloon:cc_003",
+        "//sys/dev/xen/blkback:cc_003",
+        "//sys/dev/xen/blkfront:cc_003",
+        "//sys/dev/xen/bus:cc_003",
+        "//sys/dev/xen/console:cc_003",
+        "//sys/dev/xen/control:cc_003",
+        "//sys/dev/xen/cpu:cc_003",
+        "//sys/dev/xen/debug:cc_003",
+        "//sys/dev/xen/evtchn:cc_003",
+        "//sys/dev/xen/gntdev:cc_003",
+        "//sys/dev/xen/grant_table:cc_003",
+        "//sys/dev/xen/netback:cc_003",
+        "//sys/dev/xen/netfront:cc_003",
+        "//sys/dev/xen/privcmd:cc_003",
+        "//sys/dev/xen/timer:cc_003",
+        "//sys/dev/xen/xenpci:cc_003",
+        "//sys/dev/xen/xenstore:cc_003",
+        "//sys/dev/zlib:cc_003",
+        "//sys/fs/cd9660:cc_003",
+        "//sys/fs/deadfs:cc_003",
+        "//sys/fs/devfs:cc_003",
+        "//sys/fs/fifofs:cc_003",
+        "//sys/fs/mntfs:cc_003",
+        "//sys/fs/msdosfs:cc_003",
+        "//sys/fs/nfs:cc_003",
+        "//sys/fs/nfsclient:cc_003",
+        "//sys/fs/nfsserver:cc_003",
+        "//sys/fs/procfs:cc_003",
+        "//sys/fs/pseudofs:cc_003",
+        "//sys/fs/tmpfs:cc_003",
+        "//sys/gdb:cc_003",
+        "//sys/geom:cc_003",
+        "//sys/geom/label:cc_003",
+        "//sys/geom/part:cc_003",
+        "//sys/geom/raid:cc_003",
+        "//sys/isa:cc_003",
+        "//sys/kern:cc_003",
+        "//sys/libkern:cc_003",
+        "//sys/libkern/x86:cc_003",
+        "//sys/net:cc_003",
+        "//sys/net/route:cc_003",
+        "//sys/net:cc_003_2",
+        "//sys/netinet/cc:cc_003",
+        "//sys/netinet:cc_003",
+        "//sys/netinet/netdump:cc_003",
+        "//sys/netinet:cc_003_2",
+        "//sys/netinet6:cc_003",
+        "//sys/netipsec:cc_003",
+        "//sys/netlink:cc_003",
+        "//sys/netlink/route:cc_003",
+        "//sys/nfs:cc_003",
+        "//sys/nlm:cc_003",
+        "//sys/opencrypto:cc_003",
+        "//sys/rpc:cc_003",
+        "//sys/rpc/rpcsec_tls:cc_003",
+        "//sys/rpc:cc_003_2",
+        "//sys/security/audit:cc_003",
+        "//sys/security/mac:cc_003",
+        "//sys/ufs/ffs:cc_003",
+        "//sys/ufs/ufs:cc_003",
+        "//sys/vm:cc_003",
+        "//sys/x86/acpica:cc_003",
+        "//sys/x86/isa:cc_003",
+        "//sys/x86/pci:cc_003",
+        "//sys/x86/x86:cc_003",
+        "//sys/x86/xen:cc_003",
+        "//sys/xdr:cc_003",
+        "//sys/xen:cc_003",
+        "//sys/xen/xenbus:cc_003",
+        "//sys/contrib/ck/src:cc_004",
+        "//sys/contrib/dev/acpica/components/namespace:cc_005",
+        "//sys/contrib/xz-embedded/linux/lib/xz:cc_006",
+        "//sys/dev/xz:cc_006",
+        "//sys/contrib/zstd/lib/common:cc_007",
+        "//sys/contrib/zstd/lib/compress:cc_007",
+        "//sys/contrib/zstd/lib/decompress:cc_007",
+        "//sys/contrib/zstd/lib/freebsd:cc_007",
+        "//sys/contrib/zstd/lib/compress:cc_008",
+        "//sys/contrib/zstd/lib/decompress:cc_009",
+        "//sys/contrib/libb2:cc_010",
+        "//sys/crypto/blake2:cc_011",
+        "//sys/crypto:cc_012",
+        "//sys/crypto/libsodium:cc_012",
+        "//sys/opencrypto:cc_012",
+        ":cc_013",
+        ":cc_014",
+        ":cc_015",
+        ":cc_016",
+        ":cc_017",
+        ":cc_019",
+        ":cc_018",
+        ":cc_020",
+        ":cc_021",
+        ":cc_022",
+        ":cc_023",
+        ":cc_024",
+        ":cc_025",
+        ":cc_026",
+        ":cc_027",
+        ":cc_028",
+        ":cc_029",
+        ":cc_030",
+        ":cc_031",
+        ":cc_032",
+        ":cc_033",
+        ":cc_035",
+        "//sys/kern:cc_034",
+        "//sys/kern:cc_036",
+        "//sys/contrib/zlib:cc_037",
+        ":cc_038",
+        "//sys/contrib/libsodium/src/libsodium/crypto_core/ed25519/ref10:cc_039",
+        "//sys/contrib/libsodium/src/libsodium/crypto_scalarmult/curve25519/ref10:cc_039",
+        "//sys/contrib/libsodium/src/libsodium/crypto_core/hchacha20:cc_040",
+        "//sys/contrib/libsodium/src/libsodium/crypto_onetimeauth/poly1305/donna:cc_040",
+        "//sys/contrib/libsodium/src/libsodium/crypto_onetimeauth/poly1305:cc_040",
+        "//sys/contrib/libsodium/src/libsodium/crypto_scalarmult/curve25519:cc_040",
+        "//sys/contrib/libsodium/src/libsodium/crypto_stream/chacha20/ref:cc_040",
+        "//sys/contrib/libsodium/src/libsodium/crypto_stream/chacha20:cc_040",
+        "//sys/contrib/libsodium/src/libsodium/crypto_verify/sodium:cc_040",
+        ":cc_041",
+        ":cc_045",
+        ":cc_046",
+        ":cc_047",
+        "//sys/crypto/aesni:cc_055",
+        "//sys/crypto/aesni:cc_056",
+        "//sys/crypto/aesni:cc_057",
+        ":cc_048",
+        ":cc_049",
+        "//sys/BZL:vdso",
+        "//sys/BZL:vdso_ia32",
+        "//sys/amd64/amd64:cc_050",
+        "//sys/kern:cc_058",
+        ":cc_051",
+        ":cc_053",
+    ],
+    # the -shared hack object rides the link by name (the reference passes it
+    # by bare basename from the compile directory; a path spelling would put
+    # the sandbox path in the kernel's DT_NEEDED)
+    shared_libs = [":force-dynamic-hack"],
+    object_files = {
+        ":vdso": "elf-vdso.so.o",
+        ":vdso_ia32": "elf-vdso32.so.o",
+    },
+)

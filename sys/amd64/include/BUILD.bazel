@@ -1,0 +1,27 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+# This package owns only headers, so the kernel sources of sys/amd64 stay in
+# the root package's namespace (//sys/amd64 itself would take every file
+# under it away from the root's globs and labels).
+# `#include <machine/...>`: the amd64 include tree, viewed under the name the
+# kernel sources spell (the reference compile directory's machine symlink).
+cc_library(
+    name = "machine_include",
+    hdrs = glob(
+        ["**"],
+        allow_empty = True,
+    ),
+    include_prefix = "machine",
+)
+
+# The include tree as files: the sys/BZL genrules that stage a compile
+# directory for the tree's own generators stage it under machine/.
+filegroup(
+    name = "tree",
+    srcs = glob(
+        ["**"],
+        allow_empty = True,
+    ),
+)

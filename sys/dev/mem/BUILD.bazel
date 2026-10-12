@@ -1,0 +1,48 @@
+# The kernel's compile groups for sys/dev/mem (run 2026-10-09: one package
+# per kernel source directory; the reference's link-line object
+# order is carried by the kernel link's deps list).
+load("//bazel/rules:cc_per_source_library.bzl", "cc_per_source_library")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(glob(["**/*"], allow_empty = True))
+
+cc_per_source_library(
+    name = "cc_003",
+    features = ["kernel_compile_flags"],
+    copts = [
+        "-I$(GENDIR)/sys/BZL",
+        "-Isys",
+        "-Isys/contrib/ck/include",
+        "-Isys/contrib/libfdt",
+        "-DHAVE_KERNEL_OPTION_HEADERS",
+        "-include",
+        "$(GENDIR)/sys/BZL/opt_global.h",
+        "-Werror"
+    ],
+    srcs = [
+        "memdev.c",
+        "memutil.c",
+    ],
+    hdrs = [
+        "//sys/BZL:offset_inc",
+        "//sys/BZL:vdso",
+        "//sys/BZL:vdso_ia32",
+        "//sys/BZL:acpi_wakecode",
+
+        "//sys/BZL:config",
+        "//sys/BZL:generated",
+    ],
+    additional_compiler_inputs = [
+        "//sys/kern:imgact_elf.c",
+        "//sys/kern:kern_ctf.c",
+        "//sys/libkern:qsort.c",
+        "//sys/kern:subr_busdma_bounce.c",
+        "//sys/kern:subr_syscall.c",
+        "//sys/dev/xen/netback:netback_unit_tests.c",
+        "//sys/crypto/chacha20:chacha.c",
+    ],
+    deps = [
+        "//:kernel_headers",
+    ],
+)
