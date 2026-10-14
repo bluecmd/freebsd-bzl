@@ -1,0 +1,30 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+# m4's tokenizer bootstrap slice: inittokenizer.c, the one bootstrap-m4
+# source usr.bin/m4's m4boot compiles (the reference builds the same file
+# into the bootstrap m4). parser.h -- the generated grammar header -- is
+# what it consumes; it rides the -I$(GENDIR)/usr.bin/m4 copt m4boot's
+# compile line spells.
+cc_library(
+    target_compatible_with = [
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
+    ],
+    name = "m4boot",
+    srcs = [
+        "inittokenizer.c",
+        "//usr.bin/m4:m4_parser",
+    ],
+    copts = [
+        "-DEXTENDED",
+        "-I$(GENDIR)/usr.bin/m4",
+    ],
+    deps = [
+        "//lib/libc:legacy",
+        "//lib/libopenbsd:openbsd",
+        "//tools/build/cross-build:bitcount",
+        "//tools/build/cross-build:nbtool",
+    ],
+)
