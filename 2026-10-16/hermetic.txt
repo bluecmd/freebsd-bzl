@@ -1,0 +1,1 @@
+HERMETIC OK: //bazel/image:image builds in a clean container

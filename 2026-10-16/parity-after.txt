@@ -1,0 +1,32 @@
+PARITY build=GREEN diff=converged errors=0 warnings=105 artifacts=converged 0 errors
+IDIOM score=0.0 (delta +0.0) rules=403 tus=1425 genrules=3 dirs=167
+CONVERGED  errors=0  warnings=105
+
+[warn] extra_tu x76
+     76  source compiled in bazel but not cmake
+
+[warn] extra_generated x20
+      2  bazel generates it (bash @ //usr.bin/m4:m4_parser) but cmake does not
+      2  bazel generates it (bash @ //usr.sbin/config:grammar) but cmake does not
+      1  bazel generates it (copy_file @ //lib/libc:getopt_h) but cmake does not
+      1  bazel generates it (copy_file @ //lib/libc:libc_private_h) but cmake does not
+      1  bazel generates it (write_file @ //lib/libc:libsys_h) but cmake does not
+      1  bazel generates it (copy_file @ //lib/libc:namespace_h) but cmake does not
+      1  bazel generates it (write_file @ //lib/libc:sys__pthreadtypes_h) but cmake does not
+      1  bazel generates it (write_file @ //lib/libc:sys__sigset_h) but cmake does not
+      1  bazel generates it (write_file @ //lib/libc:sys__types_h) but cmake does not
+      1  bazel generates it (copy_file @ //lib/libc:sys_queue_h) but cmake does not
+      1  bazel generates it (copy_file @ //lib/libc:un-namespace_h) but cmake does not
+      1  bazel generates it (copy_file @ //tools/build/cross-build:bitcount_copy) but cmake does not
+      1  bazel generates it (bash @ //usr.bin/awk:awkgram) but cmake does not
+      1  bazel generates it (bash @ //usr.bin/awk:awkgram) but cmake does not; the reference build wrote the same file as an undeclared by-product (/scratch/bluecmd/freebsd-bzl/ref/amd64.amd64/usr.bin/awk/awkgram.tab.h) with identical content (verified)
+      1  bazel generates it (copy_file @ //usr.bin/lex:parse_h) but cmake does not
+      1  bazel generates it (sh @ //usr.bin/lex:skel) but cmake does not
+      1  bazel generates it (copy_file @ //usr.bin/rpcgen:rpc_types) but cmake does not
+      1  bazel generates it (bash @ //usr.sbin/config:scanner) but cmake does not
+  bazel_only (usually tolerated):
+        1  lib/libc/legacyinc/getopt.h
+        1  lib/libc/legacyinc/libc_private.h
+        1  lib/libc/legacyinc/libsys.h
+        1  lib/libc/legacyinc/namespace.h
+        1  lib/libc/legacyinc/sys/_pthreadtypes.h
