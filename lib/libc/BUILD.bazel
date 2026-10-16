@@ -1,0 +1,110 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
+load("@bazel_skylib//rules:write_file.bzl", "write_file")
+
+package(default_visibility = ["//visibility:public"])
+
+# The staged include surface the tree's host tools compile against -- what
+# the reference's bootstrap stage laid out under the -Ilegacy the cross-build
+# used: libc's namespace headers first, then the few sys headers
+# libc_private.h reaches, stubbed down to what the tool compiles use.
+copy_file(
+    name = "namespace_h",
+    src = "//:tools/build/libc-bootstrap/namespace.h",
+    out = "legacyinc/namespace.h",
+)
+copy_file(
+    name = "libc_private_h",
+    src = "//:tools/build/libc-bootstrap/libc_private.h",
+    out = "legacyinc/libc_private.h",
+)
+copy_file(
+    name = "un-namespace_h",
+    src = "//:tools/build/libc-bootstrap/un-namespace.h",
+    out = "legacyinc/un-namespace.h",
+)
+copy_file(
+    name = "getopt_h",
+    src = "//:include/getopt.h",
+    out = "legacyinc/getopt.h",
+)
+write_file(
+    name = "libsys_h",
+    out = "legacyinc/libsys.h",
+    content = ["#pragma once"],
+)
+write_file(
+    name = "sys__types_h",
+    out = "legacyinc/sys/_types.h",
+    content = [
+        "#pragma once",
+        "#include <sys/types.h>",
+        "typedef __SIZE_TYPE__ __size_t;",
+        "typedef __builtin_va_list __va_list;",
+        "typedef __int64_t __sbintime_t;",
+    ],
+)
+write_file(
+    name = "sys__pthreadtypes_h",
+    out = "legacyinc/sys/_pthreadtypes.h",
+    content = ["#pragma once"],
+)
+write_file(
+    name = "sys__sigset_h",
+    out = "legacyinc/sys/_sigset.h",
+    content = ["#pragma once"],
+)
+copy_file(
+    name = "sys_queue_h",
+    src = "//:sys/sys/queue.h",
+    out = "legacyinc/sys/queue.h",
+)
+
+filegroup(
+    name = "legacyinc",
+    srcs = [
+        ":namespace_h",
+        ":libc_private_h",
+        ":un-namespace_h",
+        ":getopt_h",
+        ":libsys_h",
+        ":sys__types_h",
+        ":sys__pthreadtypes_h",
+        ":sys__sigset_h",
+        ":sys_queue_h",
+    ],
+)
+
+# liblegacy, as the reference's tools-build stage links it for the tree's
+# host tools: the compiled slices live beside their sources
+# (//lib/libc/gen:legacy, //lib/libc/stdlib:legacy, //lib/libc/string:legacy,
+# //contrib/libc-vis:legacy, //contrib/libc-pwcache:legacy,
+# //lib/libutil:legacy); this target carries their link context plus the
+# staged include surface and the cross-build shims the tools compile with,
+# so its consumers' compiles see the same -I/-D as the reference's.
+cc_library(
+    target_compatible_with = [
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
+    ],
+    name = "legacy",
+    hdrs = [":legacyinc"],
+    includes = ["legacyinc"],
+    defines = [
+        "__DBINTERFACE_PRIVATE",
+        "HAVE_VIS=0",
+        "HAVE_SVIS=0",
+    ],
+    deps = [
+        "//lib/libc/gen:legacy",
+        "//lib/libc/stdlib:legacy",
+        "//lib/libc/string:legacy",
+        "//contrib/libc-vis:legacy",
+        "//contrib/libc-pwcache:legacy",
+        "//lib/libutil:legacy",
+        "//tools/build/cross-build:progname",
+        "//tools/build/cross-build:fgetln",
+        "//tools/build/cross-build:bitcount",
+        "//tools/build/cross-build:nbtool",
+    ],
+)

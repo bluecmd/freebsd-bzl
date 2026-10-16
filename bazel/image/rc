@@ -1,0 +1,17 @@
+#!/bin/sh
+# freebsd-bzl test root: init(8) runs this instead of the base system's rc.
+# A serial console and an SSH server on vtnet0, enough for the boot test
+# (`ssh root@... true`) and for a human to log in.
+PATH=/sbin:/bin:/usr/sbin:/usr/bin; export PATH
+mount -u -o rw /
+mount -t tmpfs tmpfs /tmp
+mount -t tmpfs tmpfs /var/run 2>/dev/null
+mkdir -p /var/empty /var/run /var/log /tmp
+hostname freebsd-bzl
+ifconfig lo0 127.0.0.1/8 up
+ifconfig vtnet0 inet 10.0.2.15/24 up
+route -q add default 10.0.2.2
+[ -f /etc/ssh/ssh_host_ed25519_key ] || ssh-keygen -A >/dev/null 2>&1
+echo "freebsd-bzl: $(uname -sr) up, starting sshd" > /dev/console
+/usr/sbin/sshd
+exit 0
