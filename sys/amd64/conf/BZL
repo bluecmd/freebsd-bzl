@@ -1,0 +1,8 @@
+# freebsd-bzl kernel configuration: FreeBSD's FIRECRACKER kernel (virtio, serial
+# console, direct ELF/PVH boot, no ACPI/PCI reliance) plus the virtio PCI
+# transport, so the same kernel boots under QEMU's ordinary PC machine with
+# virtio-blk-pci / virtio-net-pci. This file is the configuration choice of the
+# acceptance test, the counterpart of the Linux project's config fragment.
+include		FIRECRACKER
+ident		BZL
+device		virtio_pci		# VirtIO PCI transport (QEMU pc machine)

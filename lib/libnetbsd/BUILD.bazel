@@ -1,0 +1,36 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+# libnetbsd, as lib/libnetbsd/Makefile builds it for the bootstrap tools
+# (makefs links it): the four sources and the header shims its compiles
+# reach through -Ilib/libnetbsd (netinet/in.h, sys/{event,time,types,wait}.h).
+cc_library(
+    # a host tool: only really built in the exec configuration, as a genrule tool
+    target_compatible_with = [
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
+    ],
+    name = "netbsd",
+    srcs = [
+        "efun.c",
+        "sockaddr_snprintf.c",
+        "strsuftoll.c",
+        "util.c",
+    ],
+    hdrs = glob(
+        ["*.h"],
+        allow_empty = True,
+    ) + glob(
+        ["netinet/*.h"],
+        allow_empty = True,
+    ) + glob(
+        ["sys/*.h"],
+        allow_empty = True,
+    ),
+    includes = ["."],
+    deps = [
+        "//tools/build/cross-build:bitcount",
+        "//tools/build/cross-build:nbtool",
+    ],
+)

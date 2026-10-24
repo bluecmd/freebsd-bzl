@@ -1,0 +1,36 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+# makefs(8)'s ffs backend, compiled in its own directory as the
+# reference's obj-tools makefs build does (-I. on the makefs root comes
+# from //usr.sbin/makefs:headers, the kernel-tree roots from
+# makefs_includes).
+cc_library(
+    target_compatible_with = [
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
+    ],
+    name = "ffs",
+    srcs = glob(["*.c"]),
+    hdrs = glob(["*.h"]),
+    defines = [
+        "MAKEFS",
+        "HAVE_ZFS",
+        "_WANT_MSDOSFS_INTERNALS",
+        "HAVE_STRUCT_STAT_ST_FLAGS=1",
+    ],
+    deps = [
+        "//usr.sbin/makefs:headers",
+        "//:makefs_includes",
+        "//lib/libc:legacy",
+        "//lib/libnetbsd:netbsd",
+        "//lib/libsbuf:sbuf",
+        "//tools/build/cross-build:progname",
+        "//tools/build/cross-build:bitcount",
+        "//tools/build/cross-build:nbtool",
+    ],
+)
+
+# the msdos backend's denode.h reaches this buffer shim as ../ffs/buf.h
+exports_files(["buf.h"])
