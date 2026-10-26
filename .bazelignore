@@ -1,0 +1,9 @@
+# Upstream test packages whose BUILD files load rules_python; the layer
+# does not build googletest's own tests (the kernel build never reaches them).
+contrib/googletest/googletest/test
+contrib/googletest/googlemock/test
+# Upstream directories with their own BUILD files the layer never builds
+# (Bazel 9 rejects the un-loaded rule names they use): googletest's and
+# libcbor's vendored test/example packages.
+contrib/googletest
+contrib/libcbor

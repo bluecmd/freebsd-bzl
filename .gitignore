@@ -40,3 +40,7 @@ tags
 .ccls-cache
 sys/*/compile
 /src.conf
+
+# Bazel: the convenience symlinks point at the host output base (absolute
+# paths); MODULE.bazel.lock is committed, the symlinks are not.
+/bazel-*
