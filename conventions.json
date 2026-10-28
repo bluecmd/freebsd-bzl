@@ -1,0 +1,2144 @@
+{
+ "//": "any2bazel emit_build.py conventions for the freebsd-bzl workspace: the FreeBSD tree is the Bazel workspace (project root .), the kernel compiles with the pinned kernel_llvm toolchain through the layer's own rules (cc_per_source_library, freebsd_kernel_link, kernel_steps), host tools with the hermetic LLVM exec toolchain. This file is the record of the derivation facts the emitter consumes; the delivered sys BUILD files are the emitter's render -- a re-emit from the installed tree reproduces them byte-for-byte (proven in the 2026-10-28 run); only the workspace root is hand-curated (keep_files). Run the emitter in a scratch copy (a real copy, never a hardlink one): it writes and never deletes, and the layer's bazel-* convenience symlinks break its query. The 2026-10-28 run closes the emit-vs-layer delta: piece_shape routes each split piece's include surface through the layer's carriers (a fact the model cannot derive -- it records a compile's primary input only); keep_files keeps the hand-curated workspace root out of the emit.",
+ "bootstrap": [
+  {
+   "attrs": {
+    "copts": [
+     "-fcommon"
+    ],
+    "deps": [
+     "//:kernel_headers"
+    ],
+    "features": [
+     "kernel_compile_flags"
+    ],
+    "hdrs": [
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "srcs": [
+     "//sys/kern:genoffset.c"
+    ]
+   },
+   "claims": [
+    "sys/BZL/genoffset.o"
+   ],
+   "comment": [
+    "the `genoffset` tool object: the reference compiles it inside",
+    "the buildkernel replay, below exec capture's resolution; its",
+    "compile is not in the model. The include surface is the",
+    "layer's (converged text) and remains the include-surface item."
+   ],
+   "load": "//bazel/rules:cc_per_source_library.bzl",
+   "name": "genoffset",
+   "pkg": "sys/BZL",
+   "rule": "cc_per_source_library"
+  },
+  {
+   "attrs": {
+    "copts": [
+     "-fcommon"
+    ],
+    "deps": [
+     "//:kernel_headers"
+    ],
+    "features": [
+     "kernel_compile_flags"
+    ],
+    "hdrs": [
+     ":offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "srcs": [
+     "//sys/amd64/amd64:genassym.c",
+     "//sys/compat/ia32:ia32_genassym.c"
+    ]
+   },
+   "claims": [
+    "sys/BZL/genassym.o",
+    "sys/BZL/ia32_genassym.o"
+   ],
+   "comment": [
+    "the `genassym` tool object: the reference compiles it inside",
+    "the buildkernel replay, below exec capture's resolution; its",
+    "compile is not in the model. The include surface is the",
+    "layer's (converged text) and remains the include-surface item."
+   ],
+   "load": "//bazel/rules:cc_per_source_library.bzl",
+   "name": "genassym",
+   "pkg": "sys/BZL",
+   "rule": "cc_per_source_library"
+  },
+  {
+   "attrs": {
+    "copts": [
+     "-x",
+     "assembler-with-cpp",
+     "-DLOCORE",
+     "-Werror"
+    ],
+    "deps": [
+     "//:kernel_headers"
+    ],
+    "features": [
+     "kernel_compile_flags"
+    ],
+    "hdrs": [
+     ":assym_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "srcs": [
+     "//sys/amd64/acpica:acpi_wakecode.S"
+    ]
+   },
+   "claims": [
+    "sys/BZL/acpi_wakecode.o"
+   ],
+   "comment": [
+    "the `acpi_wakecode_s` tool object: the reference compiles it inside",
+    "the buildkernel replay, below exec capture's resolution; its",
+    "compile is not in the model. The include surface is the",
+    "layer's (converged text) and remains the include-surface item."
+   ],
+   "load": "//bazel/rules:cc_per_source_library.bzl",
+   "name": "acpi_wakecode_s",
+   "pkg": "sys/BZL",
+   "rule": "cc_per_source_library"
+  },
+  {
+   "attrs": {
+    "copts": [
+     "-fcommon",
+     "-DOFFSET_TEST"
+    ],
+    "deps": [
+     "//:kernel_headers"
+    ],
+    "features": [
+     "kernel_compile_flags"
+    ],
+    "hdrs": [
+     "//sys/BZL:offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "srcs": [
+     "genoffset.c"
+    ]
+   },
+   "claims": [
+    "sys/BZL/genoffset_test.o"
+   ],
+   "comment": [
+    "the -DOFFSET_TEST genoffset compile: the reference builds the",
+    "tool's object twice (kern.post.mk: genoffset.o for the",
+    "generator, genoffset_test.o for the offset test); the plain",
+    "one is sys/BZL:genoffset above."
+   ],
+   "load": "//bazel/rules:cc_per_source_library.bzl",
+   "name": "genoffset",
+   "pkg": "sys/kern",
+   "rule": "cc_per_source_library"
+  }
+ ],
+ "builtin_include": {
+  "copts": [
+   "-isystem",
+   "external/+kernel_llvm_toolchain+kernel_llvm/resource_include"
+  ],
+  "dep": "@kernel_llvm//:clang_builtins",
+  "srcs": [
+   "sys/crypto/aesni/aesni_ccm.c",
+   "sys/crypto/aesni/aesni_ghash.c",
+   "sys/crypto/aesni/aesni_wrap.c",
+   "sys/crypto/aesni/intel_sha1.c",
+   "sys/crypto/aesni/intel_sha256.c"
+  ]
+ },
+ "config_template": {
+  "bazel_args": [
+   "--config=kernel"
+  ],
+  "codegen": {
+   "content_ignore_lines": [
+    "^ \\*   .+\\.m$",
+    "^#define SCCSSTR \".*$",
+    "^#define VERSTR \".*$"
+   ],
+   "mnemonics": [
+    "Genrule",
+    "TemplateExpand",
+    "FileWrite",
+    "CopyFile",
+    "Symlink",
+    "Flex",
+    "Bison",
+    "M4",
+    "ProtoCompile",
+    "GenProto",
+    "GenProtoDescriptorSet",
+    "RunBinary",
+    "AwkGenerate",
+    "YaccGenerate",
+    "LexGenerate",
+    "GenOffsets",
+    "RpcgenGenerate",
+    "NewversGenerate",
+    "VdsoGenerate",
+    "AcpiWakecode",
+    "KernelConfig"
+   ],
+   "tool_map": {
+    "awk": "//usr.bin/awk:awk",
+    "sys/conf/newvers.sh": "$(pwd)/sys/conf/newvers.sh",
+    "sys/tools/amd64_ia32_vdso.sh": "$SCRIPT",
+    "sys/tools/amd64_vdso.sh": "$SCRIPT"
+   }
+  }
+ },
+ "drop_copts_prefixes": [
+  "--sysroot=",
+  "-B",
+  "-fdebug-prefix-map=",
+  "-fmacro-prefix-map=",
+  "-ffile-prefix-map="
+ ],
+ "generated_header_includes": {
+  "sys/BZL/vnode_if.h": [
+   "sys/BZL/vnode_if_typedef.h",
+   "sys/BZL/vnode_if_newproto.h"
+  ]
+ },
+ "group_name_map": {
+  "sys/contrib/ck/src:ck_array.c": "ck",
+  "sys/contrib/libb2:blake2b-ref.c": "blake2_ref",
+  "sys/opencrypto:xform_chacha20_poly1305.c": "libsodium"
+ },
+ "include_surface": {
+  "aggregate": "kernel_headers",
+  "aggregates": [
+   {
+    "globs": [
+     "sys/**/*.h"
+    ],
+    "name": "sys_headers"
+   }
+  ],
+  "carriers": [
+   {
+    "link": "machine",
+    "name": "machine_include",
+    "pkg": "sys/amd64/include",
+    "root_label": "amd64_include",
+    "tree": "tree"
+   },
+   {
+    "link": "x86",
+    "name": "x86_include",
+    "pkg": "sys/x86/include",
+    "root_label": "x86_include",
+    "tree": "tree"
+   },
+   {
+    "link": "i386",
+    "name": "i386_include",
+    "pkg": "sys/i386/include",
+    "root_label": "i386_include",
+    "tree": "tree"
+   }
+  ],
+  "exports_files": {
+   "per_package": "**/*",
+   "root": [
+    "sys/**/*",
+    "COPYRIGHT",
+    "tools/build/libc-bootstrap/**",
+    "include/*.h"
+   ]
+  },
+  "groups": [
+   {
+    "globs": [
+     "sys/conf/**",
+     "sys/amd64/conf/**"
+    ],
+    "name": "config_inputs"
+   }
+  ],
+  "includes": [
+   "sys"
+  ],
+  "package_headers": {
+   "globs": [
+    "**/*.h",
+    "**/*.inc"
+   ],
+   "name": "headers"
+  },
+  "step_outputs": {
+   "exclude": [
+    "force-dynamic-hack.c"
+   ],
+   "name": "generated",
+   "pkg": "sys/BZL"
+  }
+ },
+ "link_rule": {
+  "targets": {
+   "force-dynamic-hack": {
+    "attrs": {
+     "args": [
+      "-target",
+      "x86_64-unknown-freebsd15.1",
+      "--ld-path=$(location @kernel_llvm//:bin/ld.lld)",
+      "-shared",
+      "-O2",
+      "-pipe",
+      "-fno-strict-aliasing",
+      "-g",
+      "-nostdinc",
+      "-I$(GENDIR)/sys/BZL",
+      "-Isys",
+      "-Isys/contrib/ck/include",
+      "-Isys/contrib/libfdt",
+      "-D_KERNEL",
+      "-DHAVE_KERNEL_OPTION_HEADERS",
+      "-include",
+      "$(GENDIR)/sys/BZL/opt_global.h",
+      "-fno-common",
+      "-fno-omit-frame-pointer",
+      "-mno-omit-leaf-frame-pointer",
+      "-ffile-prefix-map=$(GENDIR)/sys/BZL=/usr/obj/usr/src/amd64.amd64/sys/BZL",
+      "-mcmodel=kernel",
+      "-mno-red-zone",
+      "-mno-mmx",
+      "-mno-sse",
+      "-msoft-float",
+      "-fno-asynchronous-unwind-tables",
+      "-ffreestanding",
+      "-fwrapv",
+      "-fstack-protector",
+      "-gdwarf-4",
+      "-Wall",
+      "-Wstrict-prototypes",
+      "-Wmissing-prototypes",
+      "-Wpointer-arith",
+      "-Wcast-qual",
+      "-Wundef",
+      "-Wno-pointer-sign",
+      "-D__printf__=__freebsd_kprintf__",
+      "-Wmissing-include-dirs",
+      "-fdiagnostics-show-option",
+      "-Wno-unknown-pragmas",
+      "-Wswitch",
+      "-Wno-error=tautological-compare",
+      "-Wno-error=empty-body",
+      "-Wno-error=parentheses-equality",
+      "-Wno-error=unused-function",
+      "-Wno-error=pointer-sign",
+      "-Wno-error=shift-negative-value",
+      "-Wno-address-of-packed-member",
+      "-Wno-format-zero-length",
+      "-mno-aes",
+      "-mno-avx",
+      "-std=gnu17",
+      "-nostdlib"
+     ],
+     "driver": "@kernel_llvm//:bin/clang",
+     "out": "force-dynamic-hack.pico",
+     "srcs": [
+      "@kernel_llvm//:bin/ld.lld",
+      "//:sys_headers"
+     ]
+    },
+    "load": "//bazel/rules:freebsd_kernel_link.bzl",
+    "name": "force-dynamic-hack",
+    "pkg": "sys/BZL",
+    "rule": "freebsd_kernel_link"
+   },
+   "kernel.full": {
+    "attrs": {
+     "args": [
+      "-m",
+      "elf_x86_64_fbsd",
+      "-Bdynamic",
+      "-L",
+      "sys/conf",
+      "-T",
+      "$(location //:sys/conf/ldscript.amd64)",
+      "--build-id=sha1",
+      "-z",
+      "max-page-size=2097152",
+      "-z",
+      "notext",
+      "-z",
+      "ifunc-noplt",
+      "--no-warn-mismatch",
+      "--warn-common",
+      "--export-dynamic",
+      "--dynamic-linker",
+      "/red/herring",
+      "-X"
+     ],
+     "debug_out": "kernel.debug",
+     "object_files": {
+      ":vdso": "elf-vdso.so.o",
+      ":vdso_ia32": "elf-vdso32.so.o"
+     },
+     "out": "kernel.full",
+     "shared_libs": [
+      ":force-dynamic-hack"
+     ],
+     "srcs": [
+      "//:sys/conf/ldscript.amd64",
+      "//:sys/conf/debuginfo.ldscript"
+     ],
+     "stripped_out": "kernel"
+    },
+    "load": "//bazel/rules:freebsd_kernel_link.bzl",
+    "name": "kernel",
+    "pkg": "sys/BZL",
+    "rule": "freebsd_kernel_link"
+   }
+  }
+ },
+ "package_dirs": [
+  "sys/BZL",
+  "sys/amd64/acpica",
+  "sys/amd64/amd64",
+  "sys/amd64/ia32",
+  "sys/amd64/pci",
+  "sys/compat/freebsd32",
+  "sys/compat/ia32",
+  "sys/compat/x86bios",
+  "sys/contrib/ck/src",
+  "sys/contrib/dev/acpica/components/dispatcher",
+  "sys/contrib/dev/acpica/components/events",
+  "sys/contrib/dev/acpica/components/executer",
+  "sys/contrib/dev/acpica/components/hardware",
+  "sys/contrib/dev/acpica/components/namespace",
+  "sys/contrib/dev/acpica/components/parser",
+  "sys/contrib/dev/acpica/components/resources",
+  "sys/contrib/dev/acpica/components/tables",
+  "sys/contrib/dev/acpica/components/utilities",
+  "sys/contrib/libb2",
+  "sys/contrib/libnv",
+  "sys/contrib/libsodium/src/libsodium/crypto_core/ed25519/ref10",
+  "sys/contrib/libsodium/src/libsodium/crypto_core/hchacha20",
+  "sys/contrib/libsodium/src/libsodium/crypto_onetimeauth/poly1305",
+  "sys/contrib/libsodium/src/libsodium/crypto_onetimeauth/poly1305/donna",
+  "sys/contrib/libsodium/src/libsodium/crypto_scalarmult/curve25519",
+  "sys/contrib/libsodium/src/libsodium/crypto_scalarmult/curve25519/ref10",
+  "sys/contrib/libsodium/src/libsodium/crypto_stream/chacha20",
+  "sys/contrib/libsodium/src/libsodium/crypto_stream/chacha20/ref",
+  "sys/contrib/libsodium/src/libsodium/crypto_verify/sodium",
+  "sys/contrib/x86emu",
+  "sys/contrib/xz-embedded/linux/lib/xz",
+  "sys/contrib/zlib",
+  "sys/contrib/zstd/lib/common",
+  "sys/contrib/zstd/lib/compress",
+  "sys/contrib/zstd/lib/decompress",
+  "sys/contrib/zstd/lib/freebsd",
+  "sys/crypto",
+  "sys/crypto/aesni",
+  "sys/crypto/blake2",
+  "sys/crypto/camellia",
+  "sys/crypto/chacha20",
+  "sys/crypto/libsodium",
+  "sys/crypto/rijndael",
+  "sys/crypto/sha2",
+  "sys/crypto/siphash",
+  "sys/crypto/skein",
+  "sys/ddb",
+  "sys/dev/acpica",
+  "sys/dev/acpica/Osd",
+  "sys/dev/efidev",
+  "sys/dev/io",
+  "sys/dev/kvm_clock",
+  "sys/dev/led",
+  "sys/dev/md",
+  "sys/dev/mem",
+  "sys/dev/netmap",
+  "sys/dev/null",
+  "sys/dev/pci",
+  "sys/dev/random",
+  "sys/dev/smbios",
+  "sys/dev/tcp_log",
+  "sys/dev/uart",
+  "sys/dev/virtio",
+  "sys/dev/virtio/block",
+  "sys/dev/virtio/mmio",
+  "sys/dev/virtio/network",
+  "sys/dev/virtio/pci",
+  "sys/dev/vmgenc",
+  "sys/dev/watchdog",
+  "sys/dev/xen/balloon",
+  "sys/dev/xen/blkback",
+  "sys/dev/xen/blkfront",
+  "sys/dev/xen/bus",
+  "sys/dev/xen/console",
+  "sys/dev/xen/control",
+  "sys/dev/xen/cpu",
+  "sys/dev/xen/debug",
+  "sys/dev/xen/evtchn",
+  "sys/dev/xen/gntdev",
+  "sys/dev/xen/grant_table",
+  "sys/dev/xen/netback",
+  "sys/dev/xen/netfront",
+  "sys/dev/xen/privcmd",
+  "sys/dev/xen/timer",
+  "sys/dev/xen/xenpci",
+  "sys/dev/xen/xenstore",
+  "sys/dev/xz",
+  "sys/dev/zlib",
+  "sys/fs/cd9660",
+  "sys/fs/deadfs",
+  "sys/fs/devfs",
+  "sys/fs/fifofs",
+  "sys/fs/mntfs",
+  "sys/fs/msdosfs",
+  "sys/fs/nfs",
+  "sys/fs/nfsclient",
+  "sys/fs/nfsserver",
+  "sys/fs/procfs",
+  "sys/fs/pseudofs",
+  "sys/fs/tmpfs",
+  "sys/gdb",
+  "sys/geom",
+  "sys/geom/label",
+  "sys/geom/part",
+  "sys/geom/raid",
+  "sys/isa",
+  "sys/kern",
+  "sys/libkern",
+  "sys/libkern/x86",
+  "sys/net",
+  "sys/net/route",
+  "sys/netinet",
+  "sys/netinet/cc",
+  "sys/netinet/netdump",
+  "sys/netinet6",
+  "sys/netipsec",
+  "sys/netlink",
+  "sys/netlink/route",
+  "sys/nfs",
+  "sys/nlm",
+  "sys/opencrypto",
+  "sys/rpc",
+  "sys/rpc/rpcsec_tls",
+  "sys/security/audit",
+  "sys/security/mac",
+  "sys/ufs/ffs",
+  "sys/ufs/ufs",
+  "sys/vm",
+  "sys/x86/acpica",
+  "sys/x86/isa",
+  "sys/x86/pci",
+  "sys/x86/x86",
+  "sys/x86/xen",
+  "sys/xdr",
+  "sys/xen",
+  "sys/xen/xenbus"
+ ],
+ "package_split": {
+  "targets": [
+   "kernel.full"
+  ]
+ },
+ "per_source_library": {
+  "load": "//bazel/rules:cc_per_source_library.bzl"
+ },
+ "recipe_kinds": {
+  "awk_modes": {
+   "load": "//bazel/rules:kernel_generator.bzl",
+   "rule": "awk_generate"
+  }
+ },
+ "rule_supply": [
+  "-I$(GENDIR)/sys/BZL",
+  "-Isys/BZL",
+  "-Isys",
+  "-I$(GENDIR)/sys",
+  "-Isys/contrib/ck/include",
+  "-Isys/contrib/libfdt",
+  "-DHAVE_KERNEL_OPTION_HEADERS",
+  "-include",
+  "$(GENDIR)/sys/BZL/opt_global.h"
+ ],
+ "supply_additive": true,
+ "toolchain_features": [
+  "kernel_compile_flags"
+ ],
+ "toolchain_probe": "freebsd-bazel-probe.json",
+ "unrecorded_codegen": [
+  {
+   "attrs": {
+    "conf": "//:sys/amd64/conf/BZL",
+    "conf_includes": [
+     "//:config_inputs",
+     "//:sys/amd64/conf/DEFAULTS"
+    ],
+    "outs": [
+     "sys/BZL/config.c",
+     "sys/BZL/env.c",
+     "sys/BZL/hints.c",
+     "sys/BZL/opt_aac.h",
+     "sys/BZL/opt_aacraid.h",
+     "sys/BZL/opt_accept_filter_data.h",
+     "sys/BZL/opt_accept_filter_dns.h",
+     "sys/BZL/opt_accept_filter_http.h",
+     "sys/BZL/opt_accept_filter_tls.h",
+     "sys/BZL/opt_acpi.h",
+     "sys/BZL/opt_ada.h",
+     "sys/BZL/opt_adaptive_mutexes.h",
+     "sys/BZL/opt_agp.h",
+     "sys/BZL/opt_ah.h",
+     "sys/BZL/opt_aic79xx.h",
+     "sys/BZL/opt_aic7xxx.h",
+     "sys/BZL/opt_alq.h",
+     "sys/BZL/opt_altq.h",
+     "sys/BZL/opt_amdsbwd.h",
+     "sys/BZL/opt_asmc.h",
+     "sys/BZL/opt_ath.h",
+     "sys/BZL/opt_atkbd.h",
+     "sys/BZL/opt_atpic.h",
+     "sys/BZL/opt_auto_eoi.h",
+     "sys/BZL/opt_bce.h",
+     "sys/BZL/opt_bhyve_snapshot.h",
+     "sys/BZL/opt_bootp.h",
+     "sys/BZL/opt_bpf.h",
+     "sys/BZL/opt_bus.h",
+     "sys/BZL/opt_bwi.h",
+     "sys/BZL/opt_bwn.h",
+     "sys/BZL/opt_callout_profiling.h",
+     "sys/BZL/opt_cam.h",
+     "sys/BZL/opt_capsicum.h",
+     "sys/BZL/opt_carp.h",
+     "sys/BZL/opt_cc.h",
+     "sys/BZL/opt_cd.h",
+     "sys/BZL/opt_cfi.h",
+     "sys/BZL/opt_clock.h",
+     "sys/BZL/opt_config.h",
+     "sys/BZL/opt_cpu.h",
+     "sys/BZL/opt_cy_pci_fastintr.h",
+     "sys/BZL/opt_da.h",
+     "sys/BZL/opt_dcons.h",
+     "sys/BZL/opt_ddb.h",
+     "sys/BZL/opt_debug_lockf.h",
+     "sys/BZL/opt_debug_si.h",
+     "sys/BZL/opt_device_polling.h",
+     "sys/BZL/opt_directio.h",
+     "sys/BZL/opt_dontuse.h",
+     "sys/BZL/opt_drm.h",
+     "sys/BZL/opt_efirt.h",
+     "sys/BZL/opt_ekcd.h",
+     "sys/BZL/opt_etherswitch.h",
+     "sys/BZL/opt_evdev.h",
+     "sys/BZL/opt_fb.h",
+     "sys/BZL/opt_fdc.h",
+     "sys/BZL/opt_ffclock.h",
+     "sys/BZL/opt_ffs.h",
+     "sys/BZL/opt_gdb.h",
+     "sys/BZL/opt_geom.h",
+     "sys/BZL/opt_global.h",
+     "sys/BZL/opt_gpio.h",
+     "sys/BZL/opt_gzio.h",
+     "sys/BZL/opt_hid.h",
+     "sys/BZL/opt_hifn.h",
+     "sys/BZL/opt_hkbd.h",
+     "sys/BZL/opt_hn.h",
+     "sys/BZL/opt_hwpmc_hooks.h",
+     "sys/BZL/opt_hwt_hooks.h",
+     "sys/BZL/opt_iflib.h",
+     "sys/BZL/opt_ifmedia.h",
+     "sys/BZL/opt_inet.h",
+     "sys/BZL/opt_inet6.h",
+     "sys/BZL/opt_init_path.h",
+     "sys/BZL/opt_intpm.h",
+     "sys/BZL/opt_iommu.h",
+     "sys/BZL/opt_ipdivert.h",
+     "sys/BZL/opt_ipdn.h",
+     "sys/BZL/opt_ipfilter.h",
+     "sys/BZL/opt_ipfw.h",
+     "sys/BZL/opt_ipsec.h",
+     "sys/BZL/opt_ipstealth.h",
+     "sys/BZL/opt_isa.h",
+     "sys/BZL/opt_isci.h",
+     "sys/BZL/opt_isp.h",
+     "sys/BZL/opt_iwm.h",
+     "sys/BZL/opt_iwn.h",
+     "sys/BZL/opt_ixl.h",
+     "sys/BZL/opt_kbd.h",
+     "sys/BZL/opt_kbdmux.h",
+     "sys/BZL/opt_kcov.h",
+     "sys/BZL/opt_kdb.h",
+     "sys/BZL/opt_kdtrace.h",
+     "sys/BZL/opt_kern_tls.h",
+     "sys/BZL/opt_kgssapi.h",
+     "sys/BZL/opt_kld.h",
+     "sys/BZL/opt_kqueue.h",
+     "sys/BZL/opt_krpc.h",
+     "sys/BZL/opt_kstack_max_pages.h",
+     "sys/BZL/opt_kstack_pages.h",
+     "sys/BZL/opt_kstack_usage_prof.h",
+     "sys/BZL/opt_ktr.h",
+     "sys/BZL/opt_ktrace.h",
+     "sys/BZL/opt_libalias.h",
+     "sys/BZL/opt_libiconv.h",
+     "sys/BZL/opt_libmchain.h",
+     "sys/BZL/opt_lindebugfs.h",
+     "sys/BZL/opt_lpt.h",
+     "sys/BZL/opt_mac.h",
+     "sys/BZL/opt_malo.h",
+     "sys/BZL/opt_maxmem.h",
+     "sys/BZL/opt_maxphys.h",
+     "sys/BZL/opt_maxusers.h",
+     "sys/BZL/opt_mbuf_profiling.h",
+     "sys/BZL/opt_mbuf_stress_test.h",
+     "sys/BZL/opt_md.h",
+     "sys/BZL/opt_mfi.h",
+     "sys/BZL/opt_mmccam.h",
+     "sys/BZL/opt_mprof.h",
+     "sys/BZL/opt_mptable_force_htt.h",
+     "sys/BZL/opt_mptable_linux_bug_compat.h",
+     "sys/BZL/opt_mrouting.h",
+     "sys/BZL/opt_msgbuf.h",
+     "sys/BZL/opt_mvneta.h",
+     "sys/BZL/opt_mwl.h",
+     "sys/BZL/opt_netgraph.h",
+     "sys/BZL/opt_netsmb.h",
+     "sys/BZL/opt_nfs.h",
+     "sys/BZL/opt_nfslockd.h",
+     "sys/BZL/opt_nfsroot.h",
+     "sys/BZL/opt_no_adaptive_rwlocks.h",
+     "sys/BZL/opt_no_adaptive_sx.h",
+     "sys/BZL/opt_ntp.h",
+     "sys/BZL/opt_nvme.h",
+     "sys/BZL/opt_ofed.h",
+     "sys/BZL/opt_panic.h",
+     "sys/BZL/opt_param.h",
+     "sys/BZL/opt_pcfclock.h",
+     "sys/BZL/opt_pci.h",
+     "sys/BZL/opt_pf.h",
+     "sys/BZL/opt_platform.h",
+     "sys/BZL/opt_plip.h",
+     "sys/BZL/opt_pmap.h",
+     "sys/BZL/opt_posix.h",
+     "sys/BZL/opt_ppb_1284.h",
+     "sys/BZL/opt_ppc.h",
+     "sys/BZL/opt_printf.h",
+     "sys/BZL/opt_pseudofs.h",
+     "sys/BZL/opt_psm.h",
+     "sys/BZL/opt_pt.h",
+     "sys/BZL/opt_qat.h",
+     "sys/BZL/opt_quota.h",
+     "sys/BZL/opt_ratelimit.h",
+     "sys/BZL/opt_rootdevname.h",
+     "sys/BZL/opt_route.h",
+     "sys/BZL/opt_rss.h",
+     "sys/BZL/opt_rtwn.h",
+     "sys/BZL/opt_sa.h",
+     "sys/BZL/opt_safe.h",
+     "sys/BZL/opt_sched.h",
+     "sys/BZL/opt_scsi.h",
+     "sys/BZL/opt_sctp.h",
+     "sys/BZL/opt_ses.h",
+     "sys/BZL/opt_siba.h",
+     "sys/BZL/opt_siftr.h",
+     "sys/BZL/opt_sleepqueue_profiling.h",
+     "sys/BZL/opt_slhci.h",
+     "sys/BZL/opt_slip.h",
+     "sys/BZL/opt_smp.h",
+     "sys/BZL/opt_snd.h",
+     "sys/BZL/opt_spi.h",
+     "sys/BZL/opt_splash.h",
+     "sys/BZL/opt_stack.h",
+     "sys/BZL/opt_suiddir.h",
+     "sys/BZL/opt_sym.h",
+     "sys/BZL/opt_syscons.h",
+     "sys/BZL/opt_sysctl.h",
+     "sys/BZL/opt_sysvipc.h",
+     "sys/BZL/opt_tarfs.h",
+     "sys/BZL/opt_tcphpts.h",
+     "sys/BZL/opt_tdma.h",
+     "sys/BZL/opt_teken.h",
+     "sys/BZL/opt_ti.h",
+     "sys/BZL/opt_tmpfs.h",
+     "sys/BZL/opt_tpm.h",
+     "sys/BZL/opt_turnstile_profiling.h",
+     "sys/BZL/opt_u3g.h",
+     "sys/BZL/opt_uart.h",
+     "sys/BZL/opt_ufs.h",
+     "sys/BZL/opt_ukbd.h",
+     "sys/BZL/opt_umtx_profiling.h",
+     "sys/BZL/opt_uplcom.h",
+     "sys/BZL/opt_usb.h",
+     "sys/BZL/opt_uvscom.h",
+     "sys/BZL/opt_verbose_sysinit.h",
+     "sys/BZL/opt_vesa.h",
+     "sys/BZL/opt_vga.h",
+     "sys/BZL/opt_videomode.h",
+     "sys/BZL/opt_vlan.h",
+     "sys/BZL/opt_vm.h",
+     "sys/BZL/opt_watchdog.h",
+     "sys/BZL/opt_witness.h",
+     "sys/BZL/opt_wlan.h",
+     "sys/BZL/opt_wpi.h",
+     "sys/BZL/opt_x86bios.h",
+     "sys/BZL/opt_xbonehack.h",
+     "sys/BZL/opt_xdr.h",
+     "sys/BZL/opt_zstdio.h"
+    ]
+   },
+   "load": "//bazel/rules:kernel_steps.bzl",
+   "name": "config",
+   "outputs": [
+    "sys/BZL/config.c",
+    "sys/BZL/env.c",
+    "sys/BZL/hints.c",
+    "sys/BZL/opt_aac.h",
+    "sys/BZL/opt_aacraid.h",
+    "sys/BZL/opt_accept_filter_data.h",
+    "sys/BZL/opt_accept_filter_dns.h",
+    "sys/BZL/opt_accept_filter_http.h",
+    "sys/BZL/opt_accept_filter_tls.h",
+    "sys/BZL/opt_acpi.h",
+    "sys/BZL/opt_ada.h",
+    "sys/BZL/opt_adaptive_mutexes.h",
+    "sys/BZL/opt_agp.h",
+    "sys/BZL/opt_ah.h",
+    "sys/BZL/opt_aic79xx.h",
+    "sys/BZL/opt_aic7xxx.h",
+    "sys/BZL/opt_alq.h",
+    "sys/BZL/opt_altq.h",
+    "sys/BZL/opt_amdsbwd.h",
+    "sys/BZL/opt_asmc.h",
+    "sys/BZL/opt_ath.h",
+    "sys/BZL/opt_atkbd.h",
+    "sys/BZL/opt_atpic.h",
+    "sys/BZL/opt_auto_eoi.h",
+    "sys/BZL/opt_bce.h",
+    "sys/BZL/opt_bhyve_snapshot.h",
+    "sys/BZL/opt_bootp.h",
+    "sys/BZL/opt_bpf.h",
+    "sys/BZL/opt_bus.h",
+    "sys/BZL/opt_bwi.h",
+    "sys/BZL/opt_bwn.h",
+    "sys/BZL/opt_callout_profiling.h",
+    "sys/BZL/opt_cam.h",
+    "sys/BZL/opt_capsicum.h",
+    "sys/BZL/opt_carp.h",
+    "sys/BZL/opt_cc.h",
+    "sys/BZL/opt_cd.h",
+    "sys/BZL/opt_cfi.h",
+    "sys/BZL/opt_clock.h",
+    "sys/BZL/opt_config.h",
+    "sys/BZL/opt_cpu.h",
+    "sys/BZL/opt_cy_pci_fastintr.h",
+    "sys/BZL/opt_da.h",
+    "sys/BZL/opt_dcons.h",
+    "sys/BZL/opt_ddb.h",
+    "sys/BZL/opt_debug_lockf.h",
+    "sys/BZL/opt_debug_si.h",
+    "sys/BZL/opt_device_polling.h",
+    "sys/BZL/opt_directio.h",
+    "sys/BZL/opt_dontuse.h",
+    "sys/BZL/opt_drm.h",
+    "sys/BZL/opt_efirt.h",
+    "sys/BZL/opt_ekcd.h",
+    "sys/BZL/opt_etherswitch.h",
+    "sys/BZL/opt_evdev.h",
+    "sys/BZL/opt_fb.h",
+    "sys/BZL/opt_fdc.h",
+    "sys/BZL/opt_ffclock.h",
+    "sys/BZL/opt_ffs.h",
+    "sys/BZL/opt_gdb.h",
+    "sys/BZL/opt_geom.h",
+    "sys/BZL/opt_global.h",
+    "sys/BZL/opt_gpio.h",
+    "sys/BZL/opt_gzio.h",
+    "sys/BZL/opt_hid.h",
+    "sys/BZL/opt_hifn.h",
+    "sys/BZL/opt_hkbd.h",
+    "sys/BZL/opt_hn.h",
+    "sys/BZL/opt_hwpmc_hooks.h",
+    "sys/BZL/opt_hwt_hooks.h",
+    "sys/BZL/opt_iflib.h",
+    "sys/BZL/opt_ifmedia.h",
+    "sys/BZL/opt_inet.h",
+    "sys/BZL/opt_inet6.h",
+    "sys/BZL/opt_init_path.h",
+    "sys/BZL/opt_intpm.h",
+    "sys/BZL/opt_iommu.h",
+    "sys/BZL/opt_ipdivert.h",
+    "sys/BZL/opt_ipdn.h",
+    "sys/BZL/opt_ipfilter.h",
+    "sys/BZL/opt_ipfw.h",
+    "sys/BZL/opt_ipsec.h",
+    "sys/BZL/opt_ipstealth.h",
+    "sys/BZL/opt_isa.h",
+    "sys/BZL/opt_isci.h",
+    "sys/BZL/opt_isp.h",
+    "sys/BZL/opt_iwm.h",
+    "sys/BZL/opt_iwn.h",
+    "sys/BZL/opt_ixl.h",
+    "sys/BZL/opt_kbd.h",
+    "sys/BZL/opt_kbdmux.h",
+    "sys/BZL/opt_kcov.h",
+    "sys/BZL/opt_kdb.h",
+    "sys/BZL/opt_kdtrace.h",
+    "sys/BZL/opt_kern_tls.h",
+    "sys/BZL/opt_kgssapi.h",
+    "sys/BZL/opt_kld.h",
+    "sys/BZL/opt_kqueue.h",
+    "sys/BZL/opt_krpc.h",
+    "sys/BZL/opt_kstack_max_pages.h",
+    "sys/BZL/opt_kstack_pages.h",
+    "sys/BZL/opt_kstack_usage_prof.h",
+    "sys/BZL/opt_ktr.h",
+    "sys/BZL/opt_ktrace.h",
+    "sys/BZL/opt_libalias.h",
+    "sys/BZL/opt_libiconv.h",
+    "sys/BZL/opt_libmchain.h",
+    "sys/BZL/opt_lindebugfs.h",
+    "sys/BZL/opt_lpt.h",
+    "sys/BZL/opt_mac.h",
+    "sys/BZL/opt_malo.h",
+    "sys/BZL/opt_maxmem.h",
+    "sys/BZL/opt_maxphys.h",
+    "sys/BZL/opt_maxusers.h",
+    "sys/BZL/opt_mbuf_profiling.h",
+    "sys/BZL/opt_mbuf_stress_test.h",
+    "sys/BZL/opt_md.h",
+    "sys/BZL/opt_mfi.h",
+    "sys/BZL/opt_mmccam.h",
+    "sys/BZL/opt_mprof.h",
+    "sys/BZL/opt_mptable_force_htt.h",
+    "sys/BZL/opt_mptable_linux_bug_compat.h",
+    "sys/BZL/opt_mrouting.h",
+    "sys/BZL/opt_msgbuf.h",
+    "sys/BZL/opt_mvneta.h",
+    "sys/BZL/opt_mwl.h",
+    "sys/BZL/opt_netgraph.h",
+    "sys/BZL/opt_netsmb.h",
+    "sys/BZL/opt_nfs.h",
+    "sys/BZL/opt_nfslockd.h",
+    "sys/BZL/opt_nfsroot.h",
+    "sys/BZL/opt_no_adaptive_rwlocks.h",
+    "sys/BZL/opt_no_adaptive_sx.h",
+    "sys/BZL/opt_ntp.h",
+    "sys/BZL/opt_nvme.h",
+    "sys/BZL/opt_ofed.h",
+    "sys/BZL/opt_panic.h",
+    "sys/BZL/opt_param.h",
+    "sys/BZL/opt_pcfclock.h",
+    "sys/BZL/opt_pci.h",
+    "sys/BZL/opt_pf.h",
+    "sys/BZL/opt_platform.h",
+    "sys/BZL/opt_plip.h",
+    "sys/BZL/opt_pmap.h",
+    "sys/BZL/opt_posix.h",
+    "sys/BZL/opt_ppb_1284.h",
+    "sys/BZL/opt_ppc.h",
+    "sys/BZL/opt_printf.h",
+    "sys/BZL/opt_pseudofs.h",
+    "sys/BZL/opt_psm.h",
+    "sys/BZL/opt_pt.h",
+    "sys/BZL/opt_qat.h",
+    "sys/BZL/opt_quota.h",
+    "sys/BZL/opt_ratelimit.h",
+    "sys/BZL/opt_rootdevname.h",
+    "sys/BZL/opt_route.h",
+    "sys/BZL/opt_rss.h",
+    "sys/BZL/opt_rtwn.h",
+    "sys/BZL/opt_sa.h",
+    "sys/BZL/opt_safe.h",
+    "sys/BZL/opt_sched.h",
+    "sys/BZL/opt_scsi.h",
+    "sys/BZL/opt_sctp.h",
+    "sys/BZL/opt_ses.h",
+    "sys/BZL/opt_siba.h",
+    "sys/BZL/opt_siftr.h",
+    "sys/BZL/opt_sleepqueue_profiling.h",
+    "sys/BZL/opt_slhci.h",
+    "sys/BZL/opt_slip.h",
+    "sys/BZL/opt_smp.h",
+    "sys/BZL/opt_snd.h",
+    "sys/BZL/opt_spi.h",
+    "sys/BZL/opt_splash.h",
+    "sys/BZL/opt_stack.h",
+    "sys/BZL/opt_suiddir.h",
+    "sys/BZL/opt_sym.h",
+    "sys/BZL/opt_syscons.h",
+    "sys/BZL/opt_sysctl.h",
+    "sys/BZL/opt_sysvipc.h",
+    "sys/BZL/opt_tarfs.h",
+    "sys/BZL/opt_tcphpts.h",
+    "sys/BZL/opt_tdma.h",
+    "sys/BZL/opt_teken.h",
+    "sys/BZL/opt_ti.h",
+    "sys/BZL/opt_tmpfs.h",
+    "sys/BZL/opt_tpm.h",
+    "sys/BZL/opt_turnstile_profiling.h",
+    "sys/BZL/opt_u3g.h",
+    "sys/BZL/opt_uart.h",
+    "sys/BZL/opt_ufs.h",
+    "sys/BZL/opt_ukbd.h",
+    "sys/BZL/opt_umtx_profiling.h",
+    "sys/BZL/opt_uplcom.h",
+    "sys/BZL/opt_usb.h",
+    "sys/BZL/opt_uvscom.h",
+    "sys/BZL/opt_verbose_sysinit.h",
+    "sys/BZL/opt_vesa.h",
+    "sys/BZL/opt_vga.h",
+    "sys/BZL/opt_videomode.h",
+    "sys/BZL/opt_vlan.h",
+    "sys/BZL/opt_vm.h",
+    "sys/BZL/opt_watchdog.h",
+    "sys/BZL/opt_witness.h",
+    "sys/BZL/opt_wlan.h",
+    "sys/BZL/opt_wpi.h",
+    "sys/BZL/opt_x86bios.h",
+    "sys/BZL/opt_xbonehack.h",
+    "sys/BZL/opt_xdr.h",
+    "sys/BZL/opt_zstdio.h"
+   ],
+   "pkg": "sys/BZL",
+   "rule": "kernel_config"
+  },
+  {
+   "attrs": {
+    "archive": ":genoffset",
+    "member": "genoffset.o",
+    "out": "offset.inc",
+    "script": "//sys/kern:genoffset.sh"
+   },
+   "load": "//bazel/rules:kernel_steps.bzl",
+   "name": "offset_inc",
+   "outputs": [
+    "sys/BZL/offset.inc"
+   ],
+   "pkg": "sys/BZL",
+   "rule": "gen_offsets"
+  },
+  {
+   "attrs": {
+    "archive": ":genassym",
+    "awk": "//usr.bin/awk:awk",
+    "member": "genassym.o",
+    "out": "assym.inc",
+    "script": "//sys/kern:genassym.sh"
+   },
+   "load": "//bazel/rules:kernel_steps.bzl",
+   "name": "assym_inc",
+   "outputs": [
+    "sys/BZL/assym.inc"
+   ],
+   "pkg": "sys/BZL",
+   "rule": "gen_offsets"
+  },
+  {
+   "attrs": {
+    "archive": ":genassym",
+    "awk": "//usr.bin/awk:awk",
+    "member": "ia32_genassym.o",
+    "out": "ia32_assym.h",
+    "script": "//sys/kern:genassym.sh"
+   },
+   "load": "//bazel/rules:kernel_steps.bzl",
+   "name": "ia32_assym",
+   "outputs": [
+    "sys/BZL/ia32_assym.h"
+   ],
+   "pkg": "sys/BZL",
+   "rule": "gen_offsets"
+  },
+  {
+   "attrs": {
+    "archive": ":acpi_wakecode_s",
+    "bin": "acpi_wakecode.bin",
+    "data": "acpi_wakedata.h",
+    "hdr": "acpi_wakecode.h"
+   },
+   "load": "//bazel/rules:kernel_steps.bzl",
+   "name": "acpi_wakecode",
+   "outputs": [
+    "sys/BZL/acpi_wakecode.bin",
+    "sys/BZL/acpi_wakecode.h",
+    "sys/BZL/acpi_wakedata.h"
+   ],
+   "pkg": "sys/BZL",
+   "rule": "acpi_wakecode"
+  },
+  {
+   "attrs": {
+    "copyright": "//:COPYRIGHT",
+    "script": "//:sys/conf/newvers.sh",
+    "sources": [
+     "//:sys/sys/param.h"
+    ],
+    "vers": "vers.c",
+    "version": "version"
+   },
+   "load": "//bazel/rules:kernel_steps.bzl",
+   "name": "newvers",
+   "outputs": [
+    "sys/BZL/vers.c",
+    "sys/BZL/version"
+   ],
+   "pkg": "sys/BZL",
+   "rule": "newvers"
+  },
+  {
+   "attrs": {
+    "assym": ":assym.inc",
+    "includes": [
+     "//:amd64_include",
+     "//:sys_headers"
+    ],
+    "opt_global": ":opt_global.h",
+    "outs": [
+     "sys/BZL/elf-vdso.so.1",
+     "sys/BZL/elf-vdso.so.o",
+     "sys/BZL/sigtramp.pico",
+     "sys/BZL/vdso_offsets.h"
+    ],
+    "script": "//:sys/tools/amd64_vdso.sh",
+    "sources": [
+     "//sys/amd64/amd64:sigtramp.S",
+     "//:sys/tools/vdso_wrap.S",
+     "//:sys/conf/vdso_amd64.ldscript"
+    ]
+   },
+   "load": "//bazel/rules:kernel_steps.bzl",
+   "name": "vdso",
+   "outputs": [
+    "sys/BZL/elf-vdso.so.1",
+    "sys/BZL/elf-vdso.so.o",
+    "sys/BZL/sigtramp.pico",
+    "sys/BZL/vdso_offsets.h"
+   ],
+   "pkg": "sys/BZL",
+   "rule": "vdso_image"
+  },
+  {
+   "attrs": {
+    "assym": ":ia32_assym.h",
+    "i386": true,
+    "includes": [
+     "//:amd64_include",
+     "//:x86_include",
+     "//:i386_include",
+     "//:sys_headers"
+    ],
+    "opt_global": ":opt_global.h",
+    "outs": [
+     "sys/BZL/elf-vdso32.so.1",
+     "sys/BZL/elf-vdso32.so.o",
+     "sys/BZL/ia32_sigtramp.pico",
+     "sys/BZL/vdso_ia32_offsets.h"
+    ],
+    "script": "//:sys/tools/amd64_ia32_vdso.sh",
+    "sources": [
+     "//sys/amd64/ia32:ia32_sigtramp.S",
+     "//:sys/tools/vdso_wrap.S",
+     "//:sys/conf/vdso_amd64_ia32.ldscript"
+    ]
+   },
+   "load": "//bazel/rules:kernel_steps.bzl",
+   "name": "vdso_ia32",
+   "outputs": [
+    "sys/BZL/elf-vdso32.so.1",
+    "sys/BZL/elf-vdso32.so.o",
+    "sys/BZL/ia32_sigtramp.pico",
+    "sys/BZL/vdso_ia32_offsets.h"
+   ],
+   "pkg": "sys/BZL",
+   "rule": "vdso_image"
+  },
+  {
+   "attrs": {
+    "flags": {
+     "rpctlscd.h": "-hM",
+     "rpctlscd_clnt.c": "-lM",
+     "rpctlscd_xdr.c": "-c"
+    },
+    "grep": {
+     "rpctlscd.h": "pthread.h",
+     "rpctlscd_clnt.c": "string.h"
+    },
+    "outs": [
+     "sys/BZL/rpctlscd.h",
+     "sys/BZL/rpctlscd_clnt.c",
+     "sys/BZL/rpctlscd_xdr.c"
+    ],
+    "x": "//sys/rpc/rpcsec_tls:rpctlscd.x"
+   },
+   "load": "//bazel/rules:kernel_steps.bzl",
+   "name": "rpctlscd_gen",
+   "outputs": [
+    "sys/BZL/rpctlscd.h",
+    "sys/BZL/rpctlscd_clnt.c",
+    "sys/BZL/rpctlscd_xdr.c"
+   ],
+   "pkg": "sys/BZL",
+   "rule": "rpcgen_xdr"
+  },
+  {
+   "attrs": {
+    "flags": {
+     "rpctlssd.h": "-hM",
+     "rpctlssd_clnt.c": "-lM",
+     "rpctlssd_xdr.c": "-c"
+    },
+    "grep": {
+     "rpctlssd.h": "pthread.h",
+     "rpctlssd_clnt.c": "string.h"
+    },
+    "outs": [
+     "sys/BZL/rpctlssd.h",
+     "sys/BZL/rpctlssd_clnt.c",
+     "sys/BZL/rpctlssd_xdr.c"
+    ],
+    "x": "//sys/rpc/rpcsec_tls:rpctlssd.x"
+   },
+   "load": "//bazel/rules:kernel_steps.bzl",
+   "name": "rpctlssd_gen",
+   "outputs": [
+    "sys/BZL/rpctlssd.h",
+    "sys/BZL/rpctlssd_clnt.c",
+    "sys/BZL/rpctlssd_xdr.c"
+   ],
+   "pkg": "sys/BZL",
+   "rule": "rpcgen_xdr"
+  },
+  {
+   "attrs": {
+    "cmd": ": > '$(location :force-dynamic-hack.c)'",
+    "outs": [
+     "sys/BZL/force-dynamic-hack.c"
+    ]
+   },
+   "load": null,
+   "name": "force-dynamic-hack.c",
+   "outputs": [
+    "sys/BZL/force-dynamic-hack.c"
+   ],
+   "pkg": "sys/BZL",
+   "rule": "genrule"
+  },
+  {
+   "attrs": {
+    "src": "//sys/dev/acpica:acpi_if.m"
+   },
+   "load": "//bazel/rules:kernel_generator.bzl",
+   "name": "acpi_if",
+   "outputs": [
+    "sys/BZL/acpi_if.c",
+    "sys/BZL/acpi_if.h"
+   ],
+   "pkg": "sys/BZL",
+   "rule": "makeobjops"
+  },
+  {
+   "attrs": {
+    "src": "//:sys/dev/acpi_support/acpi_wmi_if.m"
+   },
+   "load": "//bazel/rules:kernel_generator.bzl",
+   "name": "acpi_wmi_if",
+   "outputs": [
+    "sys/BZL/acpi_wmi_if.c",
+    "sys/BZL/acpi_wmi_if.h"
+   ],
+   "pkg": "sys/BZL",
+   "rule": "makeobjops"
+  },
+  {
+   "attrs": {
+    "src": "//sys/kern:bus_if.m"
+   },
+   "load": "//bazel/rules:kernel_generator.bzl",
+   "name": "bus_if",
+   "outputs": [
+    "sys/BZL/bus_if.c",
+    "sys/BZL/bus_if.h"
+   ],
+   "pkg": "sys/BZL",
+   "rule": "makeobjops"
+  },
+  {
+   "attrs": {
+    "src": "//:sys/dev/cardbus/card_if.m"
+   },
+   "load": "//bazel/rules:kernel_generator.bzl",
+   "name": "card_if",
+   "outputs": [
+    "sys/BZL/card_if.c",
+    "sys/BZL/card_if.h"
+   ],
+   "pkg": "sys/BZL",
+   "rule": "makeobjops"
+  },
+  {
+   "attrs": {
+    "src": "//sys/kern:clock_if.m"
+   },
+   "load": "//bazel/rules:kernel_generator.bzl",
+   "name": "clock_if",
+   "outputs": [
+    "sys/BZL/clock_if.c",
+    "sys/BZL/clock_if.h"
+   ],
+   "pkg": "sys/BZL",
+   "rule": "makeobjops"
+  },
+  {
+   "attrs": {
+    "src": "//sys/kern:cpufreq_if.m"
+   },
+   "load": "//bazel/rules:kernel_generator.bzl",
+   "name": "cpufreq_if",
+   "outputs": [
+    "sys/BZL/cpufreq_if.c",
+    "sys/BZL/cpufreq_if.h"
+   ],
+   "pkg": "sys/BZL",
+   "rule": "makeobjops"
+  },
+  {
+   "attrs": {
+    "src": "//sys/opencrypto:cryptodev_if.m"
+   },
+   "load": "//bazel/rules:kernel_generator.bzl",
+   "name": "cryptodev_if",
+   "outputs": [
+    "sys/BZL/cryptodev_if.c",
+    "sys/BZL/cryptodev_if.h"
+   ],
+   "pkg": "sys/BZL",
+   "rule": "makeobjops"
+  },
+  {
+   "attrs": {
+    "src": "//sys/kern:device_if.m"
+   },
+   "load": "//bazel/rules:kernel_generator.bzl",
+   "name": "device_if",
+   "outputs": [
+    "sys/BZL/device_if.c",
+    "sys/BZL/device_if.h"
+   ],
+   "pkg": "sys/BZL",
+   "rule": "makeobjops"
+  },
+  {
+   "attrs": {
+    "src": "//:sys/dev/fb/fb_if.m"
+   },
+   "load": "//bazel/rules:kernel_generator.bzl",
+   "name": "fb_if",
+   "outputs": [
+    "sys/BZL/fb_if.c",
+    "sys/BZL/fb_if.h"
+   ],
+   "pkg": "sys/BZL",
+   "rule": "makeobjops"
+  },
+  {
+   "attrs": {
+    "src": "//sys/geom/part:g_part_if.m"
+   },
+   "load": "//bazel/rules:kernel_generator.bzl",
+   "name": "g_part_if",
+   "outputs": [
+    "sys/BZL/g_part_if.c",
+    "sys/BZL/g_part_if.h"
+   ],
+   "pkg": "sys/BZL",
+   "rule": "makeobjops"
+  },
+  {
+   "attrs": {
+    "src": "//sys/geom/raid:g_raid_md_if.m"
+   },
+   "load": "//bazel/rules:kernel_generator.bzl",
+   "name": "g_raid_md_if",
+   "outputs": [
+    "sys/BZL/g_raid_md_if.c",
+    "sys/BZL/g_raid_md_if.h"
+   ],
+   "pkg": "sys/BZL",
+   "rule": "makeobjops"
+  },
+  {
+   "attrs": {
+    "src": "//sys/geom/raid:g_raid_tr_if.m"
+   },
+   "load": "//bazel/rules:kernel_generator.bzl",
+   "name": "g_raid_tr_if",
+   "outputs": [
+    "sys/BZL/g_raid_tr_if.c",
+    "sys/BZL/g_raid_tr_if.h"
+   ],
+   "pkg": "sys/BZL",
+   "rule": "makeobjops"
+  },
+  {
+   "attrs": {
+    "src": "//sys/isa:isa_if.m"
+   },
+   "load": "//bazel/rules:kernel_generator.bzl",
+   "name": "isa_if",
+   "outputs": [
+    "sys/BZL/isa_if.c",
+    "sys/BZL/isa_if.h"
+   ],
+   "pkg": "sys/BZL",
+   "rule": "makeobjops"
+  },
+  {
+   "attrs": {
+    "src": "//sys/kern:linker_if.m"
+   },
+   "load": "//bazel/rules:kernel_generator.bzl",
+   "name": "linker_if",
+   "outputs": [
+    "sys/BZL/linker_if.c",
+    "sys/BZL/linker_if.h"
+   ],
+   "pkg": "sys/BZL",
+   "rule": "makeobjops"
+  },
+  {
+   "attrs": {
+    "src": "//:sys/dev/mmc/mmcbr_if.m"
+   },
+   "load": "//bazel/rules:kernel_generator.bzl",
+   "name": "mmcbr_if",
+   "outputs": [
+    "sys/BZL/mmcbr_if.c",
+    "sys/BZL/mmcbr_if.h"
+   ],
+   "pkg": "sys/BZL",
+   "rule": "makeobjops"
+  },
+  {
+   "attrs": {
+    "src": "//:sys/dev/mmc/mmcbus_if.m"
+   },
+   "load": "//bazel/rules:kernel_generator.bzl",
+   "name": "mmcbus_if",
+   "outputs": [
+    "sys/BZL/mmcbus_if.c",
+    "sys/BZL/mmcbus_if.h"
+   ],
+   "pkg": "sys/BZL",
+   "rule": "makeobjops"
+  },
+  {
+   "attrs": {
+    "src": "//sys/dev/pci:pci_if.m"
+   },
+   "load": "//bazel/rules:kernel_generator.bzl",
+   "name": "pci_if",
+   "outputs": [
+    "sys/BZL/pci_if.c",
+    "sys/BZL/pci_if.h"
+   ],
+   "pkg": "sys/BZL",
+   "rule": "makeobjops"
+  },
+  {
+   "attrs": {
+    "src": "//sys/dev/pci:pci_iov_if.m"
+   },
+   "load": "//bazel/rules:kernel_generator.bzl",
+   "name": "pci_iov_if",
+   "outputs": [
+    "sys/BZL/pci_iov_if.c",
+    "sys/BZL/pci_iov_if.h"
+   ],
+   "pkg": "sys/BZL",
+   "rule": "makeobjops"
+  },
+  {
+   "attrs": {
+    "src": "//sys/dev/pci:pcib_if.m"
+   },
+   "load": "//bazel/rules:kernel_generator.bzl",
+   "name": "pcib_if",
+   "outputs": [
+    "sys/BZL/pcib_if.c",
+    "sys/BZL/pcib_if.h"
+   ],
+   "pkg": "sys/BZL",
+   "rule": "makeobjops"
+  },
+  {
+   "attrs": {
+    "src": "//:sys/dev/cardbus/power_if.m"
+   },
+   "load": "//bazel/rules:kernel_generator.bzl",
+   "name": "power_if",
+   "outputs": [
+    "sys/BZL/power_if.c",
+    "sys/BZL/power_if.h"
+   ],
+   "pkg": "sys/BZL",
+   "rule": "makeobjops"
+  },
+  {
+   "attrs": {
+    "src": "//sys/kern:serdev_if.m"
+   },
+   "load": "//bazel/rules:kernel_generator.bzl",
+   "name": "serdev_if",
+   "outputs": [
+    "sys/BZL/serdev_if.c",
+    "sys/BZL/serdev_if.h"
+   ],
+   "pkg": "sys/BZL",
+   "rule": "makeobjops"
+  },
+  {
+   "attrs": {
+    "src": "//sys/dev/uart:uart_if.m"
+   },
+   "load": "//bazel/rules:kernel_generator.bzl",
+   "name": "uart_if",
+   "outputs": [
+    "sys/BZL/uart_if.c",
+    "sys/BZL/uart_if.h"
+   ],
+   "pkg": "sys/BZL",
+   "rule": "makeobjops"
+  },
+  {
+   "attrs": {
+    "src": "//sys/dev/virtio:virtio_bus_if.m"
+   },
+   "load": "//bazel/rules:kernel_generator.bzl",
+   "name": "virtio_bus_if",
+   "outputs": [
+    "sys/BZL/virtio_bus_if.c",
+    "sys/BZL/virtio_bus_if.h"
+   ],
+   "pkg": "sys/BZL",
+   "rule": "makeobjops"
+  },
+  {
+   "attrs": {
+    "src": "//sys/dev/virtio:virtio_if.m"
+   },
+   "load": "//bazel/rules:kernel_generator.bzl",
+   "name": "virtio_if",
+   "outputs": [
+    "sys/BZL/virtio_if.c",
+    "sys/BZL/virtio_if.h"
+   ],
+   "pkg": "sys/BZL",
+   "rule": "makeobjops"
+  },
+  {
+   "attrs": {
+    "src": "//sys/dev/virtio/pci:virtio_pci_if.m"
+   },
+   "load": "//bazel/rules:kernel_generator.bzl",
+   "name": "virtio_pci_if",
+   "outputs": [
+    "sys/BZL/virtio_pci_if.c",
+    "sys/BZL/virtio_pci_if.h"
+   ],
+   "pkg": "sys/BZL",
+   "rule": "makeobjops"
+  },
+  {
+   "attrs": {
+    "src": "//sys/xen/xenbus:xenbus_if.m"
+   },
+   "load": "//bazel/rules:kernel_generator.bzl",
+   "name": "xenbus_if",
+   "outputs": [
+    "sys/BZL/xenbus_if.c",
+    "sys/BZL/xenbus_if.h"
+   ],
+   "pkg": "sys/BZL",
+   "rule": "makeobjops"
+  },
+  {
+   "attrs": {
+    "src": "//sys/xen/xenbus:xenbusb_if.m"
+   },
+   "load": "//bazel/rules:kernel_generator.bzl",
+   "name": "xenbusb_if",
+   "outputs": [
+    "sys/BZL/xenbusb_if.c",
+    "sys/BZL/xenbusb_if.h"
+   ],
+   "pkg": "sys/BZL",
+   "rule": "makeobjops"
+  },
+  {
+   "attrs": {
+    "src": "//sys/xen:xenmem/xenmem_if.m"
+   },
+   "load": "//bazel/rules:kernel_generator.bzl",
+   "name": "xenmem_if",
+   "outputs": [
+    "sys/BZL/xenmem_if.c",
+    "sys/BZL/xenmem_if.h"
+   ],
+   "pkg": "sys/BZL",
+   "rule": "makeobjops"
+  }
+ ],
+ "piece_shape": {
+  "hdrs": {
+   "default": [
+    "//sys/BZL:offset_inc",
+    "//sys/BZL:vdso",
+    "//sys/BZL:vdso_ia32",
+    "//sys/BZL:acpi_wakecode",
+    "//sys/BZL:config",
+    "//sys/BZL:generated"
+   ],
+   "except": {
+    "sys/BZL:acpi_if_c": [
+     ":offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/BZL:acpi_wakecode_s": [
+     ":assym_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/BZL:acpi_wmi_if_c": [
+     ":offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/BZL:bus_if_c": [
+     ":offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/BZL:bzl": [
+     ":offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/BZL:card_if_c": [
+     ":offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/BZL:clock_if_c": [
+     ":offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/BZL:cpufreq_if_c": [
+     ":offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/BZL:cryptodev_if_c": [
+     ":offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/BZL:device_if_c": [
+     ":offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/BZL:fb_if_c": [
+     ":offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/BZL:force_dynamic_hack": [
+     ":offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/BZL:g_part_if_c": [
+     ":offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/BZL:g_raid_md_if_c": [
+     ":offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/BZL:g_raid_tr_if_c": [
+     ":offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/BZL:genassym": [
+     ":offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/BZL:genoffset": [
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/BZL:isa_if_c": [
+     ":offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/BZL:linker_if_c": [
+     ":offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/BZL:mmcbr_if_c": [
+     ":offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/BZL:mmcbus_if_c": [
+     ":offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/BZL:pci_if_c": [
+     ":offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/BZL:pci_iov_if_c": [
+     ":offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/BZL:pcib_if_c": [
+     ":offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/BZL:power_if_c": [
+     ":offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/BZL:rpctls": [
+     ":offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/BZL:serdev_if_c": [
+     ":offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/BZL:uart_if_c": [
+     ":offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/BZL:vers_c": [
+     ":offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/BZL:virtio_bus_if_c": [
+     ":offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/BZL:virtio_if_c": [
+     ":offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/BZL:virtio_pci_if_c": [
+     ":offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/BZL:xenbus_if_c": [
+     ":offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/BZL:xenbusb_if_c": [
+     ":offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/BZL:xenmem_if_c": [
+     ":offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/amd64/amd64:locore": [
+     "//sys/amd64/ia32:ia32_exception.S",
+     "apic_vector.S",
+     "atpic_vector.S",
+     "//sys/BZL:assym_inc",
+     "//sys/BZL:ia32_assym",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/amd64/amd64:xen_locore": [
+     "//sys/BZL:assym_inc",
+     "//sys/BZL:offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/contrib/ck/src": [
+     "//sys/BZL:offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/contrib/dev/acpica/components/namespace:nsaccess": [
+     "//sys/BZL:offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/contrib/libb2": [
+     "//sys/BZL:offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/contrib/libsodium/src/libsodium/crypto_core/ed25519/ref10": [
+     "//sys/BZL:offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/contrib/libsodium/src/libsodium/crypto_core/hchacha20": [
+     "//sys/BZL:offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/contrib/libsodium/src/libsodium/crypto_onetimeauth/poly1305": [
+     "//sys/BZL:offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/contrib/libsodium/src/libsodium/crypto_onetimeauth/poly1305/donna": [
+     "//sys/BZL:offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/contrib/libsodium/src/libsodium/crypto_scalarmult/curve25519": [
+     "//sys/BZL:offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/contrib/libsodium/src/libsodium/crypto_scalarmult/curve25519/ref10": [
+     "//sys/BZL:offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/contrib/libsodium/src/libsodium/crypto_stream/chacha20": [
+     "//sys/BZL:offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/contrib/libsodium/src/libsodium/crypto_stream/chacha20/ref": [
+     "//sys/BZL:offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/contrib/libsodium/src/libsodium/crypto_verify/sodium": [
+     "//sys/BZL:offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/contrib/xz-embedded/linux/lib/xz": [
+     "//sys/BZL:offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/contrib/zlib": [
+     "//sys/BZL:offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/contrib/zstd/lib/common": [
+     "//sys/BZL:offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/contrib/zstd/lib/compress:zstd_compress_superblock": [
+     "//sys/BZL:offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/contrib/zstd/lib/compress:zstd_heapmode": [
+     "//sys/BZL:offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/contrib/zstd/lib/decompress:huf_decompress": [
+     "//sys/BZL:offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/contrib/zstd/lib/decompress:zstd_heapmode": [
+     "//sys/BZL:offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/contrib/zstd/lib/freebsd": [
+     "//sys/BZL:offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/crypto:curve25519": [
+     "//sys/BZL:offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/crypto/aesni:aeskeys_amd64": [
+     "//sys/amd64/ia32:ia32_exception.S",
+     "//sys/amd64/amd64:apic_vector.S",
+     "//sys/amd64/amd64:atpic_vector.S",
+     "//sys/BZL:assym_inc",
+     "//sys/BZL:ia32_assym",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/crypto/aesni:aesni_ccm": [
+     "//sys/BZL:offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/crypto/aesni:aesni_wrap": [
+     "//sys/BZL:offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/crypto/aesni:intel_sha": [
+     "//sys/BZL:offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/crypto/blake2": [
+     "//sys/BZL:offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/crypto/libsodium": [
+     "//sys/BZL:offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/dev/xz": [
+     "//sys/BZL:offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/kern:genoffset": [
+     "//sys/BZL:offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/kern:stack_protector": [
+     "//sys/BZL:offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/kern:subr_clockcalib": [
+     "//sys/BZL:offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/kern:subr_compressor": [
+     "//sys/BZL:offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/kern:subr_ticks": [
+     "//sys/amd64/ia32:ia32_exception.S",
+     "//sys/amd64/amd64:apic_vector.S",
+     "//sys/amd64/amd64:atpic_vector.S",
+     "//sys/BZL:assym_inc",
+     "//sys/BZL:ia32_assym",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ],
+    "sys/opencrypto:libsodium": [
+     "//sys/BZL:offset_inc",
+     "//sys/BZL:config",
+     "//sys/BZL:generated"
+    ]
+   }
+  },
+  "additional_compiler_inputs": {
+   "default": [
+    "//sys/kern:imgact_elf.c",
+    "//sys/kern:kern_ctf.c",
+    "//sys/libkern:qsort.c",
+    "//sys/kern:subr_busdma_bounce.c",
+    "//sys/kern:subr_syscall.c",
+    "//sys/dev/xen/netback:netback_unit_tests.c",
+    "//sys/crypto/chacha20:chacha.c"
+   ],
+   "except": {
+    "sys/BZL:acpi_if_c": [],
+    "sys/BZL:acpi_wakecode_s": [],
+    "sys/BZL:acpi_wmi_if_c": [],
+    "sys/BZL:bus_if_c": [],
+    "sys/BZL:bzl": [],
+    "sys/BZL:card_if_c": [],
+    "sys/BZL:clock_if_c": [],
+    "sys/BZL:cpufreq_if_c": [],
+    "sys/BZL:cryptodev_if_c": [],
+    "sys/BZL:device_if_c": [],
+    "sys/BZL:fb_if_c": [],
+    "sys/BZL:force_dynamic_hack": [],
+    "sys/BZL:g_part_if_c": [],
+    "sys/BZL:g_raid_md_if_c": [],
+    "sys/BZL:g_raid_tr_if_c": [],
+    "sys/BZL:genassym": [],
+    "sys/BZL:genoffset": [],
+    "sys/BZL:isa_if_c": [],
+    "sys/BZL:linker_if_c": [],
+    "sys/BZL:mmcbr_if_c": [],
+    "sys/BZL:mmcbus_if_c": [],
+    "sys/BZL:pci_if_c": [],
+    "sys/BZL:pci_iov_if_c": [],
+    "sys/BZL:pcib_if_c": [],
+    "sys/BZL:power_if_c": [],
+    "sys/BZL:rpctls": [],
+    "sys/BZL:serdev_if_c": [],
+    "sys/BZL:uart_if_c": [],
+    "sys/BZL:vers_c": [],
+    "sys/BZL:virtio_bus_if_c": [],
+    "sys/BZL:virtio_if_c": [],
+    "sys/BZL:virtio_pci_if_c": [],
+    "sys/BZL:xenbus_if_c": [],
+    "sys/BZL:xenbusb_if_c": [],
+    "sys/BZL:xenmem_if_c": [],
+    "sys/amd64/amd64:locore": [],
+    "sys/amd64/amd64:xen_locore": [],
+    "sys/contrib/ck/src": [],
+    "sys/contrib/dev/acpica/components/namespace:nsaccess": [],
+    "sys/contrib/libb2": [],
+    "sys/contrib/libsodium/src/libsodium/crypto_core/ed25519/ref10": [],
+    "sys/contrib/libsodium/src/libsodium/crypto_core/hchacha20": [],
+    "sys/contrib/libsodium/src/libsodium/crypto_onetimeauth/poly1305": [],
+    "sys/contrib/libsodium/src/libsodium/crypto_onetimeauth/poly1305/donna": [],
+    "sys/contrib/libsodium/src/libsodium/crypto_scalarmult/curve25519": [],
+    "sys/contrib/libsodium/src/libsodium/crypto_scalarmult/curve25519/ref10": [],
+    "sys/contrib/libsodium/src/libsodium/crypto_stream/chacha20": [],
+    "sys/contrib/libsodium/src/libsodium/crypto_stream/chacha20/ref": [],
+    "sys/contrib/libsodium/src/libsodium/crypto_verify/sodium": [],
+    "sys/contrib/xz-embedded/linux/lib/xz": [],
+    "sys/contrib/zlib": [],
+    "sys/contrib/zstd/lib/common": [
+     "debug.c"
+    ],
+    "sys/contrib/zstd/lib/compress:zstd_compress_superblock": [],
+    "sys/contrib/zstd/lib/compress:zstd_heapmode": [
+     "//sys/contrib/zstd/lib/common:debug.c"
+    ],
+    "sys/contrib/zstd/lib/decompress:huf_decompress": [],
+    "sys/contrib/zstd/lib/decompress:zstd_heapmode": [
+     "//sys/contrib/zstd/lib/common:debug.c"
+    ],
+    "sys/contrib/zstd/lib/freebsd": [
+     "//sys/contrib/zstd/lib/common:debug.c"
+    ],
+    "sys/crypto:curve25519": [],
+    "sys/crypto/aesni:aeskeys_amd64": [],
+    "sys/crypto/aesni:aesni_ccm": [],
+    "sys/crypto/aesni:aesni_wrap": [],
+    "sys/crypto/aesni:intel_sha": [],
+    "sys/crypto/blake2": [],
+    "sys/crypto/chacha20": [
+     "//sys/kern:imgact_elf.c",
+     "//sys/kern:kern_ctf.c",
+     "//sys/libkern:qsort.c",
+     "//sys/kern:subr_busdma_bounce.c",
+     "//sys/kern:subr_syscall.c",
+     "//sys/dev/xen/netback:netback_unit_tests.c",
+     "chacha.c"
+    ],
+    "sys/crypto/libsodium": [],
+    "sys/dev/xen/netback": [
+     "//sys/kern:imgact_elf.c",
+     "//sys/kern:kern_ctf.c",
+     "//sys/libkern:qsort.c",
+     "//sys/kern:subr_busdma_bounce.c",
+     "//sys/kern:subr_syscall.c",
+     "netback_unit_tests.c",
+     "//sys/crypto/chacha20:chacha.c"
+    ],
+    "sys/dev/xz": [],
+    "sys/kern:genoffset": [],
+    "sys/kern:kern": [
+     "imgact_elf.c",
+     "kern_ctf.c",
+     "//sys/libkern:qsort.c",
+     "subr_busdma_bounce.c",
+     "subr_syscall.c",
+     "//sys/dev/xen/netback:netback_unit_tests.c",
+     "//sys/crypto/chacha20:chacha.c"
+    ],
+    "sys/kern:stack_protector": [],
+    "sys/kern:subr_clockcalib": [],
+    "sys/kern:subr_compressor": [],
+    "sys/kern:subr_ticks": [],
+    "sys/libkern": [
+     "//sys/kern:imgact_elf.c",
+     "//sys/kern:kern_ctf.c",
+     "qsort.c",
+     "//sys/kern:subr_busdma_bounce.c",
+     "//sys/kern:subr_syscall.c",
+     "//sys/dev/xen/netback:netback_unit_tests.c",
+     "//sys/crypto/chacha20:chacha.c"
+    ],
+    "sys/opencrypto:libsodium": []
+   }
+  },
+  "deps": [
+   "//:kernel_headers"
+  ]
+ },
+ "keep_files": [
+  "BUILD.bazel",
+  "sys/amd64/include/BUILD.bazel",
+  "sys/i386/include/BUILD.bazel",
+  "sys/x86/include/BUILD.bazel"
+ ],
+ "style": {
+  "multiline_attrs": [
+   "srcs",
+   "hdrs",
+   "deps",
+   "additional_compiler_inputs",
+   "copts"
+  ],
+  "no_trailing_comma_attrs": [
+   "copts"
+  ],
+  "glob_inline_max": 2,
+  "list_gap": {
+   "hdrs": {
+    "after": "//sys/BZL:acpi_wakecode",
+    "before": "//sys/BZL:config"
+   }
+  },
+  "header_comment": [
+   "# The kernel's compile groups for {pkg} (run 2026-10-09: one package",
+   "# per kernel source directory; the reference's link-line object",
+   "# order is carried by the kernel link's deps list)."
+  ],
+  "filegroup_comment": [
+   "The directory's headers, for the kernel's -Isys include",
+   "surface: root kernel_headers / sys_headers take this carrier",
+   "across the package boundary (their glob stops here)."
+  ]
+ }
+}

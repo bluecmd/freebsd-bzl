@@ -1,0 +1,44 @@
+load("//bazel/rules:makefs_image.bzl", "boot_iso", "ufs_rootdisk")
+
+# The release deliverable: the kernel the boot test loads directly (PVH ELF,
+# //:kernel at the top level), the root disk the rc and sshd live on, and
+# the bootable CD the runner's TCG test loads (cdboot -> /boot/loader ->
+# kernel; the runner's QEMU has no KVM and the kernel's PVH entry always
+# takes xen_pvh_init_ops -- sys/x86/xen/pv.c -- so under TCG the direct
+# `-kernel` boot panics "TSC not initialized"; the loader boot chain gives
+# the kernel its native init_ops). The images are makefs(8) from the tree
+# -- the same binary the reference's obj-tools stage left in its obj tree
+# -- populating the pinned release's base.txz; the staging scripts
+# (make-rootdisk.py, make-cdboot.py) hold the recipes and the load-bearing
+# makefs details.
+# just the stripped kernel: //sys/BZL:kernel's DefaultInfo carries the
+# kernel.full/kernel.debug endgame too, the boot test wants the stripped ELF
+filegroup(
+    name = "kernel_file",
+    srcs = ["//:kernel_file"],
+)
+
+ufs_rootdisk(
+    name = "rootdisk",
+    stage = "make-rootdisk.py",
+    base_txz = "@freebsd_base//:base.txz",
+    rc = "rc",
+    authorized_keys = "authorized_keys",
+    makefs = "//usr.sbin/makefs:makefs",
+    readelf = "@llvm_toolchain_llvm//:readelf",
+    out = "root.img",
+)
+
+boot_iso(
+    name = "cdboot",
+    stage = "make-cdboot.py",
+    base_txz = "@freebsd_base//:base.txz",
+    kernel = ":kernel_file",
+    makefs = "//usr.sbin/makefs:makefs",
+    out = "cd.iso",
+)
+
+filegroup(
+    name = "image",
+    srcs = ["//:kernel", ":rootdisk", ":cdboot"],
+)

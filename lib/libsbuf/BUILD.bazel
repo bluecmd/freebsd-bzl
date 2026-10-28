@@ -1,0 +1,26 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+# libsbuf, as lib/libsbuf/Makefile builds it (.PATH sys/kern): the sbuf(9)
+# formatter the bootstrap tools (makefs) link. The reference compiled these
+# two kernel sources against the shims alone (-Ilegacy/usr/include, which
+# carried its own sys/sbuf.h -- mirrored in cross-build's include/legacy);
+# no -Isys anywhere, so the shim chain's include_next cannot fall into the
+# kernel tree.
+cc_library(
+    # a host tool: only really built in the exec configuration, as a genrule tool
+    target_compatible_with = [
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
+    ],
+    name = "sbuf",
+    srcs = [
+        "//sys/kern:subr_prf.c",
+        "//sys/kern:subr_sbuf.c",
+    ],
+    deps = [
+        "//tools/build/cross-build:nbtool",
+        "//tools/build/cross-build:bitcount",
+    ],
+)
