@@ -1,0 +1,2 @@
+IMAGE: 15328296 /scratch/bluecmd/freebsd-bzl/image/kernel
+IMAGE: 268435456 /scratch/bluecmd/freebsd-bzl/image/root.img
