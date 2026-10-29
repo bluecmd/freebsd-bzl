@@ -1,0 +1,151 @@
+{
+  "compiler": "external/+kernel_llvm_toolchain+kernel_llvm/bin/clang",
+  "env": {
+    "PATH": "/bin:/usr/bin:/usr/local/bin"
+  },
+  "compile": {
+    "flags": [
+      "-target",
+      "x86_64-unknown-freebsd15.1",
+      "-O2",
+      "-pipe",
+      "-fno-strict-aliasing",
+      "-g",
+      "-nostdinc",
+      "-D_KERNEL",
+      "-fno-common",
+      "-fno-omit-frame-pointer",
+      "-mno-omit-leaf-frame-pointer",
+      "-mcmodel=kernel",
+      "-mno-red-zone",
+      "-mno-mmx",
+      "-mno-sse",
+      "-msoft-float",
+      "-fno-asynchronous-unwind-tables",
+      "-ffreestanding",
+      "-fwrapv",
+      "-fstack-protector",
+      "-gdwarf-4",
+      "-Wall",
+      "-Wstrict-prototypes",
+      "-Wmissing-prototypes",
+      "-Wpointer-arith",
+      "-Wcast-qual",
+      "-Wundef",
+      "-Wno-pointer-sign",
+      "-D__printf__=__freebsd_kprintf__",
+      "-Wmissing-include-dirs",
+      "-fdiagnostics-show-option",
+      "-Wno-unknown-pragmas",
+      "-Wswitch",
+      "-Wno-error=tautological-compare",
+      "-Wno-error=empty-body",
+      "-Wno-error=parentheses-equality",
+      "-Wno-error=unused-function",
+      "-Wno-error=pointer-sign",
+      "-Wno-error=shift-negative-value",
+      "-Wno-address-of-packed-member",
+      "-Wno-format-zero-length",
+      "-mno-aes",
+      "-mno-avx",
+      "-std=gnu17"
+    ],
+    "include_roots": [],
+    "pic": []
+  },
+  "link": {
+    "executable": [],
+    "shared": [],
+    "library_dirs": [],
+    "libs": []
+  },
+  "actions": {
+    "compile": 2,
+    "link": 2
+  },
+  "bazel": {
+    "workspace": "/scratch/bluecmd/freebsd-bzl/freebsd",
+    "args": [],
+    "lang": "c"
+  },
+  "driver_probe_error": null,
+  "driver": {
+    "include_search": {
+      "quote": [],
+      "angle": []
+    },
+    "nonexistent": [],
+    "driver_options": [],
+    "compile_command": {
+      "argv0": "/scratch/bluecmd/bazel-cache/_bazel_bluecmd/cache/repos/v1/contents/1774d68eb67a3ee0e5d20d17c87715d3c34cf751beb5d4595d5c3c278f3bf84f/48396a89-232a-474f-9f98-4a049717a446/bin/clang-19",
+      "include_flags": [],
+      "sysroot": null
+    },
+    "link_command": {
+      "argv0": "/bin/ld",
+      "library_dirs": [
+        "/usr/lib"
+      ],
+      "rpath_link": [],
+      "sysroot": null
+    },
+    "link_probe_error": null,
+    "realpaths": {},
+    "compiler": [
+      "/scratch/bluecmd/bazel-cache/_bazel_bluecmd/46cb8bd256c988fd761eaba19711500d/execroot/_main/external/+kernel_llvm_toolchain+kernel_llvm/bin/clang",
+      "-target",
+      "x86_64-unknown-freebsd15.1",
+      "-O2",
+      "-pipe",
+      "-fno-strict-aliasing",
+      "-g",
+      "-nostdinc",
+      "-D_KERNEL",
+      "-fno-common",
+      "-fno-omit-frame-pointer",
+      "-mno-omit-leaf-frame-pointer",
+      "-mcmodel=kernel",
+      "-mno-red-zone",
+      "-mno-mmx",
+      "-mno-sse",
+      "-msoft-float",
+      "-fno-asynchronous-unwind-tables",
+      "-ffreestanding",
+      "-fwrapv",
+      "-fstack-protector",
+      "-gdwarf-4",
+      "-Wall",
+      "-Wstrict-prototypes",
+      "-Wmissing-prototypes",
+      "-Wpointer-arith",
+      "-Wcast-qual",
+      "-Wundef",
+      "-Wno-pointer-sign",
+      "-D__printf__=__freebsd_kprintf__",
+      "-Wmissing-include-dirs",
+      "-fdiagnostics-show-option",
+      "-Wno-unknown-pragmas",
+      "-Wswitch",
+      "-Wno-error=tautological-compare",
+      "-Wno-error=empty-body",
+      "-Wno-error=parentheses-equality",
+      "-Wno-error=unused-function",
+      "-Wno-error=pointer-sign",
+      "-Wno-error=shift-negative-value",
+      "-Wno-address-of-packed-member",
+      "-Wno-format-zero-length",
+      "-mno-aes",
+      "-mno-avx",
+      "-std=gnu17"
+    ],
+    "resolved": "/scratch/bluecmd/bazel-cache/_bazel_bluecmd/cache/repos/v1/contents/1774d68eb67a3ee0e5d20d17c87715d3c34cf751beb5d4595d5c3c278f3bf84f/48396a89-232a-474f-9f98-4a049717a446/bin/clang-19",
+    "env": {
+      "PATH": "/bin:/usr/bin:/usr/local/bin"
+    },
+    "lang": "c",
+    "toolchain_includes": []
+  },
+  "toolchain_roots": [
+    "/usr/lib"
+  ]
+}

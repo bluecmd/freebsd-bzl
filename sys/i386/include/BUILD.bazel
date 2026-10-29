@@ -1,0 +1,19 @@
+# The kernel's compile groups for sys/i386/include (run 2026-10-09: one package
+# per kernel source directory; the reference's link-line object
+# order is carried by the kernel link's deps list).
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+# The build links `sys/BZL/i386` -> `sys/i386/include`: `<i386/...>` names these headers.
+cc_library(
+    name = "i386_include",
+    hdrs = glob(["**"], allow_empty = True),
+    include_prefix = "i386",
+)
+
+# The tree as files: the step rules that stage a compile directory stage it under `i386/`.
+filegroup(
+    name = "tree",
+    srcs = glob(["**"], allow_empty = True),
+)
