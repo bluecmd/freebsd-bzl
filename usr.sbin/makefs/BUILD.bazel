@@ -1,0 +1,69 @@
+load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+# The include surface makefs(8)'s backends compile against: the reference's
+# obj-tools makefs compile pointed each backend at the makefs root (-I.) and
+# its zfs tree, so the backends' pieces (ffs/, cd9660/, msdos/, zfs/, and
+# the borrowed sbin/newfs_msdos, stand/libsa/zfs, contrib/mtree, contrib/mknod
+# sources) reach makefs.h through this carrier -- the kernel-tree -I roots
+# below it still come from makefs_includes.
+cc_library(
+    name = "headers",
+    hdrs = glob(["*.h"]),
+    includes = [
+        ".",
+        "zfs",
+    ],
+)
+
+# makefs(8), as the reference build's obj-tools stage builds it (the
+# bootstrap that produced tmp/legacy/bin/makefs, the root disk's tool):
+# the makefs core, its backends compiled in their own directories
+# (ffs/cd9660/msdos/zfs), the kernel's msdosfs and ffs sources, the borrowed
+# pieces (newfs_msdos's mkfs, libsa's zfs nvlist, the mtree spec parser and
+# pack_dev) and the kernel's ffs_tables. Links libnetbsd, libsbuf; the
+# reference's -lutil is glibc's empty stub.
+cc_binary(
+    target_compatible_with = [
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
+    ],
+    name = "makefs",
+    srcs = glob(
+        ["*.c"],
+        allow_empty = True,
+    ) + [
+        "//sys/ufs/ffs:ffs_tables.c",
+    ],
+    includes = [
+        ".",
+        "zfs",
+    ],
+    defines = [
+        "MAKEFS",
+        "HAVE_ZFS",
+        "_WANT_MSDOSFS_INTERNALS",
+        "HAVE_STRUCT_STAT_ST_FLAGS=1",
+    ],
+    deps = [
+        ":headers",
+        "//usr.sbin/makefs/cd9660:cd9660",
+        "//usr.sbin/makefs/ffs:ffs",
+        "//usr.sbin/makefs/msdos:msdos",
+        "//usr.sbin/makefs/zfs:zfs",
+        "//sbin/newfs_msdos:mkfs_msdos",
+        "//stand/libsa/zfs:nvlist",
+        "//contrib/mtree:mtree",
+        "//contrib/mknod:mknod",
+        "//:makefs_includes",
+        "//lib/libc:legacy",
+        "//lib/libnetbsd:netbsd",
+        "//lib/libsbuf:sbuf",
+        "//tools/build/cross-build:progname",
+        "//tools/build/cross-build:bitcount",
+        "//tools/build/cross-build:nbtool",
+    ],
+    linkstatic = True,
+)

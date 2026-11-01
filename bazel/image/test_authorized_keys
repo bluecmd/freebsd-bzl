@@ -1,0 +1,1 @@
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOVOe9kweWsx50nK8MWVyhbEZ64LdvKFgVB4ATHCuT5w freebsd-bzl-test-image throwaway key (NOT a personal key; private half is the repo secret TEST_SSH_KEY)

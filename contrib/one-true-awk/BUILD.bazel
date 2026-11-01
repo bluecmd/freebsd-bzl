@@ -1,0 +1,6 @@
+package(default_visibility = ["//visibility:public"])
+# Sources of one-true-awk (usr.bin/awk builds the tool from here).
+exports_files([
+    "b.c", "lex.c", "lib.c", "main.c", "parse.c", "proctab.c", "run.c",
+    "tran.c", "awkgram.y", "awk.h", "maketab.c", "proto.h",
+])

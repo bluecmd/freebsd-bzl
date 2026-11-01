@@ -1,0 +1,71 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+# flex(1)'s scanner core, compiled in its own directory as usr.bin/lex's
+# Makefile does (the reference's bootstrap builds lex with the flex
+# contribution's sources). The generated surface it shares with lex --
+# skel.c and parse.h in usr.bin/lex's bin dir -- rides the -I copts the
+# same way the reference's compile line did.
+cc_library(
+    target_compatible_with = [
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
+    ],
+    name = "flex",
+    srcs = [
+        "buf.c",
+        "ccl.c",
+        "dfa.c",
+        "ecs.c",
+        "filter.c",
+        "gen.c",
+        "main.c",
+        "misc.c",
+        "nfa.c",
+        "options.c",
+        "regex.c",
+        "scanflags.c",
+        "scanopt.c",
+        "sym.c",
+        "tables.c",
+        "tables_shared.c",
+        "tblcmp.c",
+        "yylex.c",
+    ],
+    hdrs = [
+        "//usr.bin/lex:config.h",
+        "//usr.bin/lex:parse_h",
+        "flexdef.h",
+        "flexint.h",
+        "FlexLexer.h",
+        "options.h",
+        "tables.h",
+        "tables_shared.h",
+        "version.h",
+        "scanopt.h",
+    ],
+    copts = [
+        "-DHAVE_CONFIG_H",
+        "-I$(GENDIR)/usr.bin/lex",
+        "-Iusr.bin/lex",
+        "-Icontrib/flex/src",
+    ],
+    deps = [
+        "//lib/libc:legacy",
+        "//tools/build/cross-build:nbtool",
+        "//tools/build/cross-build:bitcount",
+    ],
+)
+
+# The skeleton surface lex(1)'s build reaches by label (mkskel.sh over the
+# skeleton through the bootstrap m4) and the flexdef headers it compiles
+# against.
+exports_files([
+    "flex.skl",
+    "mkskel.sh",
+    "flexdef.h",
+    "flexint.h",
+    "tables_shared.h",
+    "tables_shared.c",
+])

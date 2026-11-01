@@ -1,0 +1,91 @@
+load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+# The cross-build compatibility headers FreeBSD's own tools compile against
+# when built on Linux (-DHAVE_NBTOOL_CONFIG_H=1, usr.bin/*/Makefile): libc
+# shims for getprogname(3), err(3) and friends. include/legacy is the
+# reference build's tmp/legacy/usr/include stand-in for the kernel headers
+# the bootstrap tools install there (ufs/{ufs,ffs}/*.h, reached before the
+# linux/common shims so the shim chain's include_next sees them, exactly as
+# the reference's -Ilegacy did).
+cc_library(
+    # a host tool: only really built in the exec configuration, as a genrule tool
+    target_compatible_with = [
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
+    ],
+    name = "nbtool",
+    hdrs = glob(
+        ["include/**/*.h"],
+        allow_empty = True,
+    ),
+    includes = [
+        "include/legacy",
+        "include/linux",
+        "include/common",
+    ],
+    defines = [
+        "HAVE_NBTOOL_CONFIG_H=1",
+        "_GNU_SOURCE=1",
+    ],
+)
+
+# The shim's sys/types.h pulls one libc header (<sys/bitcount.h>) that only
+# exists in the kernel tree's sys/sys; copied here so the include root can
+# spell it as <sys/bitcount.h> without exposing the rest of the kernel tree
+# to the host tools' compiles (the reference built them against the legacy
+# libc headers).
+copy_file(
+    name = "bitcount_copy",
+    src = "//:sys/sys/bitcount.h",
+    out = "sys/bitcount.h",
+)
+
+cc_library(
+    # a host tool: only really built in the exec configuration, as a genrule tool
+    target_compatible_with = [
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
+    ],
+    name = "bitcount",
+    hdrs = [":bitcount_copy"],
+    includes = ["."],
+)
+
+# fgetln(3) for the host (the tools' usage follows the FreeBSD form): the
+# reference's liblegacy.a compiled cross-build/fgetln_fallback.c (and its
+# fgetwln sibling) into the compat library every bootstrap tool links.
+cc_library(
+    # a host tool: only really built in the exec configuration, as a genrule tool
+    target_compatible_with = [
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
+    ],
+    name = "fgetln",
+    srcs = [
+        "fgetln_fallback.c",
+        "fgetwln_fallback.c",
+    ],
+    hdrs = ["local-link.h"],
+    deps = [
+        "//tools/build/cross-build:bitcount",
+        "//tools/build/cross-build:nbtool",
+    ],
+)
+
+# getprogname(3) for the host (the tools' usage follows the FreeBSD form).
+cc_library(
+    # a host tool: only really built in the exec configuration, as a genrule tool
+    target_compatible_with = [
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
+    ],
+    name = "progname",
+    srcs = ["progname.c"],
+    deps = [
+        "//tools/build/cross-build:bitcount",
+        "//tools/build/cross-build:nbtool",
+    ],
+)

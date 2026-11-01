@@ -1,0 +1,31 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+# liblegacy's libutil slice: fparseln, the liblegacy.a piece makefs(8)
+# links (the reference's tools-build stage; the tree's -lutil is glibc's
+# empty stub). The staged include surface lives in //lib/libc (legacyinc),
+# spelled as -I copts here.
+cc_library(
+    target_compatible_with = [
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
+    ],
+    name = "legacy",
+    srcs = ["fparseln.c", "//lib/libc:legacyinc"],
+    copts = [
+        "-Ilib/libc/legacyinc",
+        "-I$(GENDIR)/lib/libc/legacyinc",
+    ],
+    defines = [
+        "__DBINTERFACE_PRIVATE",
+        "HAVE_VIS=0",
+        "HAVE_SVIS=0",
+    ],
+    deps = [
+        "//tools/build/cross-build:progname",
+        "//tools/build/cross-build:fgetln",
+        "//tools/build/cross-build:bitcount",
+        "//tools/build/cross-build:nbtool",
+    ],
+)
