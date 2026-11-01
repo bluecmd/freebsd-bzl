@@ -1,0 +1,2 @@
+qemu-system-x86_64: -netdev user,id=n0,hostfwd=tcp:127.0.0.1:2222-:22: Could not set up host forwarding rule 'tcp:127.0.0.1:2222-:22'
+BOOT-SSH FAIL: qemu exited
